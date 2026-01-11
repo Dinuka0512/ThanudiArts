@@ -1,5 +1,6 @@
 import NavBar from "../componens/navBar.tsx";
 import { useNavigate } from "react-router-dom";
+import Bgvideo from "../assets/bg.mp4";
 
 export default function Shop() {
     const navigate = useNavigate();
@@ -36,13 +37,30 @@ export default function Shop() {
             <NavBar />
 
             {/* HERO */}
-            <section className="bg-black text-white py-20 text-center px-4">
-                <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                    Art Shop
-                </h1>
-                <p className="max-w-xl mx-auto text-lg text-gray-300">
-                    Purchase unique artworks and custom designs directly from the artist.
-                </p>
+            <section className="bg-black text-white py-20 text-center px-4 relative">
+
+                {/* Background Video */}
+                <video
+                    className="absolute top-0 left-0 w-full h-full object-cover"
+                    src={Bgvideo}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                />
+
+                {/* Dark Overlay */}
+                <div className="absolute inset-0 bg-black/60"></div>
+
+                {/* Content */}
+                <div className='relative'>
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                        Art Shop
+                    </h1>
+                    <p className="max-w-xl mx-auto text-lg text-gray-300">
+                        Purchase unique artworks and custom designs directly from the artist.
+                    </p>
+                </div>
             </section>
 
             {/* PRODUCT GRID */}
