@@ -2,6 +2,7 @@ import NavBar from "../componens/navBar.tsx";
 import Logo from "../assets/l3.png";
 import Bgvideo from "../assets/bg.mp4";
 import { useNavigate } from "react-router-dom";
+import imageThanudi from "../assets/thanudi/Thanudi arts.jpg"
 
 export default function About() {
     const navigate = useNavigate();
@@ -52,7 +53,11 @@ export default function About() {
             <section className="py-16 px-5 max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-10">
 
                 {/* Image Placeholder */}
-                <div className="w-64 h-64 bg-gray-300 rounded-xl shadow-lg"></div>
+                <div className="w-64 h-64 bg-gray-300 rounded-xl shadow-lg">
+                    <img src={imageThanudi} 
+                    className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-300 rounded-2xl"
+                    alt="Thanudi Arts Image" />
+                </div>
 
                 {/* Text */}
                 <div>

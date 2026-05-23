@@ -1,36 +1,26 @@
+import { useState, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 import NavBar from "../componens/navBar.tsx";
 import { useNavigate } from "react-router-dom";
 import Bgvideo from "../assets/bg.mp4";
 
 export default function Shop() {
     const navigate = useNavigate();
+    const [products, setProducts] = useState<{ id: string; name: string; price: string; type: string; imageUrl: string }[]>([]);
+    const [categories, setCategories] = useState<string[]>([]);
+    const [activeCategory, setActiveCategory] = useState("All");
 
-    const products = [
-        {
-            id: 1,
-            name: "Digital Portrait",
-            price: "LKR 2,500",
-            type: "Digital Art",
-        },
-        {
-            id: 2,
-            name: "Hand-Drawn Sketch",
-            price: "LKR 3,500",
-            type: "Hand-Drawn",
-        },
-        {
-            id: 3,
-            name: "Custom Character Art",
-            price: "LKR 5,000",
-            type: "Custom Order",
-        },
-        {
-            id: 4,
-            name: "Poster Design",
-            price: "LKR 4,000",
-            type: "Digital Art",
-        },
-    ];
+    useEffect(() => {
+        getDocs(collection(db, "products")).then((snap) => {
+            const prods = snap.docs.map((doc) => ({ ...doc.data(), id: doc.id } as any));
+            setProducts(prods);
+            const cats = [...new Set(prods.map((p: any) => p.type).filter(Boolean))] as string[];
+            setCategories(cats);
+        });
+    }, []);
+
+    const filtered = activeCategory === "All" ? products : products.filter((p) => p.type === activeCategory);
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -63,17 +53,54 @@ export default function Shop() {
                 </div>
             </section>
 
+            {/* CATEGORY FILTER */}
+            <section className="pt-8 pb-4 px-5 max-w-7xl mx-auto">
+                <div className="flex flex-wrap gap-3 justify-center">
+                    <button
+                        onClick={() => setActiveCategory("All")}
+                        className={`px-5 py-2 rounded-full font-medium transition ${
+                            activeCategory === "All"
+                                ? "bg-black text-white"
+                                : "bg-white text-black hover:bg-gray-200"
+                        }`}
+                    >
+                        All
+                    </button>
+                    {categories.map((cat) => (
+                        <button
+                            key={cat}
+                            onClick={() => setActiveCategory(cat)}
+                            className={`px-5 py-2 rounded-full font-medium transition ${
+                                activeCategory === cat
+                                    ? "bg-black text-white"
+                                    : "bg-white text-black hover:bg-gray-200"
+                            }`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
+            </section>
+
             {/* PRODUCT GRID */}
-            <section className="py-16 px-5 max-w-7xl mx-auto">
+            <section className="pb-16 px-5 max-w-7xl mx-auto">
+                {filtered.length === 0 ? (
+                    <p className="text-center text-gray-500 py-12">No products in this category yet.</p>
+                ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
 
-                    {products.map((product) => (
+                    {filtered.map((product) => (
                         <div
                             key={product.id}
                             className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition"
                         >
-                            {/* Image Placeholder */}
-                            <div className="h-64 bg-gray-300"></div>
+                            <div className="h-64 overflow-hidden">
+                                {product.imageUrl ? (
+                                    <img src={product.imageUrl} className="w-full h-full object-cover" alt={product.name} />
+                                ) : (
+                                    <div className="h-64 bg-gray-300"></div>
+                                )}
+                            </div>
 
                             {/* Info */}
                             <div className="p-6">
@@ -84,7 +111,7 @@ export default function Shop() {
                                     {product.type}
                                 </p>
                                 <p className="text-lg font-bold mb-4">
-                                    {product.price}
+                                    LKR.{product.price}
                                 </p>
 
                                 <button
@@ -98,6 +125,7 @@ export default function Shop() {
                     ))}
 
                 </div>
+                )}
             </section>
 
             {/* CTA */}

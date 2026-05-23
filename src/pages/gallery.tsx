@@ -1,15 +1,24 @@
+import { useState, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 import NavBar from "../componens/navBar.tsx";
 import Bgvideo from "../assets/bg.mp4";
 
 export default function Gallery() {
-    const artworks = [
-        { id: 1, title: "Digital Portrait", category: "Digital Art" },
-        { id: 2, title: "Sketch Art", category: "Hand-Drawn" },
-        { id: 3, title: "Fantasy Illustration", category: "Digital Art" },
-        { id: 4, title: "Pencil Drawing", category: "Hand-Drawn" },
-        { id: 5, title: "Custom Character", category: "Custom" },
-        { id: 6, title: "Concept Art", category: "Digital Art" },
-    ];
+    const [artworks, setArtworks] = useState<{ id: string; title: string; category: string; imageUrl: string }[]>([]);
+    const [categories, setCategories] = useState<string[]>([]);
+    const [activeCategory, setActiveCategory] = useState("All");
+
+    useEffect(() => {
+        getDocs(collection(db, "posts")).then((snap) => {
+            const posts = snap.docs.map((doc) => ({ ...doc.data(), id: doc.id } as any));
+            setArtworks(posts);
+            const cats = [...new Set(posts.map((p: any) => p.category).filter(Boolean))] as string[];
+            setCategories(cats);
+        });
+    }, []);
+
+    const filtered = activeCategory === "All" ? artworks : artworks.filter((a) => a.category === activeCategory);
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -41,31 +50,61 @@ export default function Gallery() {
                </div>
             </section>
 
-            {/* GALLERY GRID */}
-            <section className="py-16 px-5 max-w-7xl mx-auto">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-
-                    {artworks.map((art) => (
-                        <div
-                            key={art.id}
-                            className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition"
+            {/* CATEGORY FILTER */}
+            <section className="py-8 px-5 max-w-7xl mx-auto">
+                <div className="flex flex-wrap gap-3 justify-center">
+                    <button
+                        onClick={() => setActiveCategory("All")}
+                        className={`px-5 py-2 rounded-full font-medium transition ${
+                            activeCategory === "All"
+                                ? "bg-black text-white"
+                                : "bg-white text-black hover:bg-gray-200"
+                        }`}
+                    >
+                        All
+                    </button>
+                    {categories.map((cat) => (
+                        <button
+                            key={cat}
+                            onClick={() => setActiveCategory(cat)}
+                            className={`px-5 py-2 rounded-full font-medium transition ${
+                                activeCategory === cat
+                                    ? "bg-black text-white"
+                                    : "bg-white text-black hover:bg-gray-200"
+                            }`}
                         >
-                            {/* Image Placeholder */}
-                            <div className="h-64 bg-gray-300"></div>
-
-                            {/* Info */}
-                            <div className="p-5">
-                                <h3 className="text-xl font-semibold mb-1">
-                                    {art.title}
-                                </h3>
-                                <p className="text-gray-600 text-sm">
-                                    {art.category}
-                                </p>
-                            </div>
-                        </div>
+                            {cat}
+                        </button>
                     ))}
-
                 </div>
+            </section>
+
+            {/* GALLERY GRID */}
+            <section className="pb-16 px-5 max-w-7xl mx-auto">
+                {filtered.length === 0 ? (
+                    <p className="text-center text-gray-500 py-12">No artworks in this category yet.</p>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                        {filtered.map((art) => (
+                            <div
+                                key={art.id}
+                                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition"
+                            >
+                                <div className="h-64 overflow-hidden">
+                                    {art.imageUrl ? (
+                                        <img src={art.imageUrl} className="w-full h-full object-cover" alt={art.title} />
+                                    ) : (
+                                        <div className="h-64 bg-gray-300"></div>
+                                    )}
+                                </div>
+                                <div className="p-5">
+                                    <h3 className="text-xl font-semibold mb-1">{art.title}</h3>
+                                    <p className="text-gray-600 text-sm">{art.category}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </section>
 
             {/* CTA */}

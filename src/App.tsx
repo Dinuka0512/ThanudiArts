@@ -1,11 +1,21 @@
-import Route from "./routes/index.tsx"
-import {BrowserRouter} from "react-router-dom";
-function App() {
-  return (
-      <BrowserRouter>
-          <Route/>
-      </BrowserRouter>
-  )
+import AppRoutes from "./routes/index.tsx";
+import { BrowserRouter } from "react-router-dom";
+import WhatsAppButton from "./componens/whatsappButton.tsx";
+import useVisitorTracker from "./hooks/useVisitorTracker";
+
+function Tracker() {
+  useVisitorTracker();
+  return null;
 }
 
-export default App
+function App() {
+  return (
+    <BrowserRouter>
+      <Tracker />
+      <AppRoutes />
+      <WhatsAppButton />
+    </BrowserRouter>
+  );
+}
+
+export default App;
