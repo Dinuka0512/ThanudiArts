@@ -9,7 +9,8 @@ interface FeaturedItem {
     id: string;
     title?: string;
     name?: string;
-    imageUrl: string;
+    imageUrl?: string;
+    images?: string[];
     category?: string;
     type?: string;
     price?: string;
@@ -30,6 +31,9 @@ interface LayoutItem {
     active: boolean;
     order: number;
 }
+
+const getFirstImage = (item: FeaturedItem): string =>
+    item.images?.[0] || item.imageUrl || "";
 
 export default function Explore() {
     const navigate = useNavigate();
@@ -139,7 +143,7 @@ export default function Explore() {
                                 >
                                     <div className="aspect-square overflow-hidden">
                                         <img
-                                            src={item.imageUrl}
+                                            src={getFirstImage(item)}
                                             alt={item.title}
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                         />
@@ -178,11 +182,12 @@ export default function Explore() {
                             {featuredProducts.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                                    onClick={() => navigate(`/shop/${item.id}`)}
+                                    className="group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
                                 >
                                     <div className="aspect-square overflow-hidden">
                                         <img
-                                            src={item.imageUrl}
+                                            src={getFirstImage(item)}
                                             alt={item.name}
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                         />
@@ -323,11 +328,12 @@ export default function Explore() {
                             {shopItems.slice(0, 4).map((item) => (
                                 <div
                                     key={item.id}
-                                    className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-300 transition-all duration-300"
+                                    onClick={() => navigate(`/shop/${item.id}`)}
+                                    className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-300 transition-all duration-300 cursor-pointer"
                                 >
                                     <div className="aspect-square overflow-hidden">
                                         <img
-                                            src={item.imageUrl}
+                                            src={getFirstImage(item)}
                                             alt={item.name || item.title}
                                             className="w-full h-full object-cover"
                                         />

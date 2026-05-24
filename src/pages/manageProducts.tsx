@@ -11,7 +11,9 @@ interface Product {
     name: string;
     price: string;
     type: string;
-    imageUrl: string;
+    description?: string;
+    images?: string[];
+    imageUrl?: string;
     featured: boolean;
 }
 
@@ -28,7 +30,8 @@ export default function ManageProducts() {
     const [newName, setNewName] = useState("");
     const [newPrice, setNewPrice] = useState("");
     const [newType, setNewType] = useState("");
-    const [newImageUrl, setNewImageUrl] = useState("");
+    const [newDescription, setNewDescription] = useState("");
+    const [newImages, setNewImages] = useState<string[]>([]);
     const [newFeatured, setNewFeatured] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -37,7 +40,9 @@ export default function ManageProducts() {
     const [editName, setEditName] = useState("");
     const [editPrice, setEditPrice] = useState("");
     const [editType, setEditType] = useState("");
-    const [editImageUrl, setEditImageUrl] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editImages, setEditImages] = useState<string[]>([]);
+    const [editUploading, setEditUploading] = useState(false);
 
     const productsCollection = collection(db, "products");
     const categoriesCollection = collection(db, "categories");
@@ -86,15 +91,57 @@ export default function ManageProducts() {
         }
     };
 
+    const handleAddImage = async (file: File) => {
+        setUploading(true);
+        try {
+            const url = await uploadToCloudinary(file);
+            setNewImages((prev) => [...prev, url]);
+        } catch (err) {
+            console.error(err);
+            alert("Upload failed");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleEditImage = async (file: File) => {
+        setEditUploading(true);
+        try {
+            const url = await uploadToCloudinary(file);
+            setEditImages((prev) => [...prev, url]);
+        } catch (err) {
+            console.error(err);
+            alert("Upload failed");
+        } finally {
+            setEditUploading(false);
+        }
+    };
+
+    const removeNewImage = (index: number) => {
+        setNewImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const removeEditImage = (index: number) => {
+        setEditImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newName || !newPrice || !newImageUrl) return alert("Please fill all fields");
+        if (!newName || !newPrice || newImages.length === 0) return alert("Please fill all fields and upload at least one image");
         setLoading(true);
         try {
-            await addDoc(productsCollection, { name: newName.trim(), price: newPrice.trim(), type: newType, imageUrl: newImageUrl.trim(), featured: newFeatured });
+            await addDoc(productsCollection, {
+                name: newName.trim(),
+                price: newPrice.trim(),
+                type: newType,
+                description: newDescription.trim(),
+                images: newImages,
+                featured: newFeatured,
+            });
             setNewName("");
             setNewPrice("");
-            setNewImageUrl("");
+            setNewDescription("");
+            setNewImages([]);
             setNewFeatured(false);
             fetchProducts();
         } catch (err) {
@@ -122,15 +169,21 @@ export default function ManageProducts() {
         setEditName(product.name);
         setEditPrice(product.price);
         setEditType(product.type);
-        setEditImageUrl(product.imageUrl);
+        setEditDescription(product.description || "");
+        setEditImages(product.images || (product.imageUrl ? [product.imageUrl] : []));
     };
 
     const handleSave = async (id: string, e: React.FormEvent) => {
         e.preventDefault();
         if (!editName.trim() || !editPrice.trim()) return;
         try {
-            const update: any = { name: editName.trim(), price: editPrice.trim(), type: editType };
-            if (editImageUrl.trim()) update.imageUrl = editImageUrl.trim();
+            const update: any = {
+                name: editName.trim(),
+                price: editPrice.trim(),
+                type: editType,
+                description: editDescription.trim(),
+                images: editImages,
+            };
             await updateDoc(doc(db, "products", id), update);
             setEditingId(null);
             fetchProducts();
@@ -152,6 +205,12 @@ export default function ManageProducts() {
             console.error(err);
             alert("Failed to update. Check Firestore rules.");
         }
+    };
+
+    const getFirstImage = (product: Product): string => {
+        if (product.images && product.images.length > 0) return product.images[0];
+        if (product.imageUrl) return product.imageUrl;
+        return "";
     };
 
     return (
@@ -215,19 +274,43 @@ export default function ManageProducts() {
                                     ))}
                                 </select>
                             </div>
-                            <div className="flex gap-4 items-center">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="flex-1 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-white/10 file:text-white"
-                                    onChange={(e) => {
-                                        const f = e.target.files?.[0];
-                                        if (f) handleUpload(f, setNewImageUrl);
-                                    }}
-                                />
-                                {uploading && <span className="text-sm text-gray-400">Uploading...</span>}
-                                {newImageUrl && !uploading && (
-                                    <img src={newImageUrl} className="h-12 w-12 rounded-lg object-cover shrink-0" alt="" />
+                            <textarea
+                                className="w-full bg-white/5 border border-white/10 p-3 rounded-xl outline-none focus:ring-1 focus:ring-white resize-none"
+                                placeholder="Product description"
+                                rows={3}
+                                value={newDescription}
+                                onChange={(e) => setNewDescription(e.target.value)}
+                            />
+                            <div className="space-y-2">
+                                <label className="text-sm text-gray-400">Images</label>
+                                <div className="flex gap-4 items-center">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="flex-1 text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-white/10 file:text-white"
+                                        onChange={(e) => {
+                                            const f = e.target.files?.[0];
+                                            if (f) handleAddImage(f);
+                                            e.target.value = "";
+                                        }}
+                                    />
+                                    {uploading && <span className="text-sm text-gray-400">Uploading...</span>}
+                                </div>
+                                {newImages.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {newImages.map((url, i) => (
+                                            <div key={i} className="relative group">
+                                                <img src={url} className="h-16 w-16 rounded-lg object-cover" alt="" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeNewImage(i)}
+                                                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                                                >
+                                                    x
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
                                 )}
                             </div>
                             <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
@@ -241,7 +324,7 @@ export default function ManageProducts() {
                             </label>
                             <button
                                 type="submit"
-                                disabled={loading || !newImageUrl}
+                                disabled={loading || newImages.length === 0}
                                 className="bg-white text-black font-bold px-6 py-3 rounded-xl hover:bg-gray-200 transition disabled:opacity-50"
                             >
                                 {loading ? "Saving..." : "Add Product"}
@@ -279,15 +362,42 @@ export default function ManageProducts() {
                                                 <option key={cat.id} className="bg-zinc-900" value={cat.title}>{cat.title}</option>
                                             ))}
                                         </select>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            className="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white/10 file:text-white"
-                                            onChange={(e) => {
-                                                const f = e.target.files?.[0];
-                                                if (f) handleUpload(f, setEditImageUrl);
-                                            }}
+                                        <textarea
+                                            className="w-full bg-white/5 border border-white/10 p-2 rounded-xl outline-none focus:ring-1 focus:ring-white text-sm resize-none"
+                                            rows={2}
+                                            value={editDescription}
+                                            onChange={(e) => setEditDescription(e.target.value)}
                                         />
+                                        <div className="space-y-1">
+                                            <p className="text-xs text-gray-400">Images</p>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white/10 file:text-white"
+                                                onChange={(e) => {
+                                                    const f = e.target.files?.[0];
+                                                    if (f) handleEditImage(f);
+                                                    e.target.value = "";
+                                                }}
+                                            />
+                                            {editUploading && <p className="text-xs text-gray-400">Uploading...</p>}
+                                            {editImages.length > 0 && (
+                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                    {editImages.map((url, i) => (
+                                                        <div key={i} className="relative group">
+                                                            <img src={url} className="h-12 w-12 rounded object-cover" alt="" />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeEditImage(i)}
+                                                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                                                            >
+                                                                x
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="flex gap-2">
                                             <button type="submit" className="text-green-400 hover:text-green-300 font-semibold text-sm">Save</button>
                                             <button type="button" onClick={handleCancel} className="text-gray-400 hover:text-gray-300 font-semibold text-sm">Cancel</button>
@@ -296,7 +406,7 @@ export default function ManageProducts() {
                                 ) : (
                                     <>
                                         <div className="h-48 overflow-hidden">
-                                            <img src={product.imageUrl} className="w-full h-full object-cover" alt={product.name} />
+                                            <img src={getFirstImage(product)} className="w-full h-full object-cover" alt={product.name} />
                                         </div>
                                         <div className="p-4">
                                             <div className="flex justify-between items-start">
@@ -304,6 +414,11 @@ export default function ManageProducts() {
                                                     <h4 className="font-bold">{product.name}</h4>
                                                     <p className="text-xs text-gray-400">{product.type}</p>
                                                     <p className="text-sm font-semibold mt-1">{product.price}</p>
+                                                    {(product.images?.length || (product.imageUrl ? 1 : 0)) > 1 && (
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            {(product.images?.length || (product.imageUrl ? 1 : 0))} images
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div className="flex gap-1 shrink-0">
                                                     <button

@@ -7,6 +7,7 @@ import About from "../pages/about";
 import Contact from "../pages/contact.tsx";
 import Gallery from "../pages/gallery.tsx";
 import Shop from "../pages/shop.tsx";
+import ProductDetail from "../pages/productDetail.tsx";
 import AdminLogin from "../pages/adminLoginPage.tsx";
 import AdminDashboard from "../pages/adminPage.tsx";
 import ManageCategories from "../pages/manageCategories.tsx";
@@ -40,6 +41,7 @@ export default function AppRoutes() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/gallery" element={<Gallery />} />
       <Route path="/shop" element={<Shop />} />
+      <Route path="/shop/:id" element={<ProductDetail />} />
       
       {/* Login Page */}
       <Route path="/admin" element={<AdminLogin />} />
