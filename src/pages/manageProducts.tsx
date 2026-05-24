@@ -78,19 +78,6 @@ export default function ManageProducts() {
         );
     }
 
-    const handleUpload = async (file: File, setUrl: (url: string) => void) => {
-        setUploading(true);
-        try {
-            const url = await uploadToCloudinary(file);
-            setUrl(url);
-        } catch (err) {
-            console.error(err);
-            alert("Upload failed");
-        } finally {
-            setUploading(false);
-        }
-    };
-
     const handleAddImage = async (file: File) => {
         setUploading(true);
         try {

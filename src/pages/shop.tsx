@@ -61,12 +61,6 @@ export default function Shop() {
         setCurrentPage(1);
     };
 
-    const getFirstImage = (product: Product): string => {
-        if (product.images && product.images.length > 0) return product.images[0];
-        if (product.imageUrl) return product.imageUrl;
-        return "";
-    };
-
     return (
         <div className="min-h-screen bg-gray-100">
             <NavBar />
