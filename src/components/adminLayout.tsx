@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { signOut } from "firebase/auth"
 import {
@@ -50,7 +51,26 @@ export default function AdminLayout({
 }: AdminLayoutProps) {
   const navigate = useNavigate()
 
+  const SESSION_KEY = "thanudi_admin_login_at"
+  const MAX_SESSION_MS = 10 * 60 * 1000
+
+  useEffect(() => {
+    const now = Date.now()
+    let loginAt = Number(sessionStorage.getItem(SESSION_KEY))
+    if (!loginAt || Number.isNaN(loginAt)) {
+      loginAt = now
+      sessionStorage.setItem(SESSION_KEY, String(loginAt))
+    }
+    const remaining = Math.max(0, loginAt + MAX_SESSION_MS - now)
+    const timer = setTimeout(() => {
+      sessionStorage.removeItem(SESSION_KEY)
+      signOut(auth).finally(() => navigate("/admin", { replace: true }))
+    }, remaining)
+    return () => clearTimeout(timer)
+  }, [navigate])
+
   const handleLogout = async () => {
+    sessionStorage.removeItem(SESSION_KEY)
     await signOut(auth)
     navigate("/admin")
   }

@@ -20,6 +20,9 @@ export default function AdminLogin() {
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (u) => {
+            if (u && !sessionStorage.getItem("thanudi_admin_login_at")) {
+                sessionStorage.setItem("thanudi_admin_login_at", String(Date.now()));
+            }
             if (u) navigate("/admin/dashboard", { replace: true });
         });
         return unsub;
@@ -31,6 +34,7 @@ export default function AdminLogin() {
         setLoading(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
+            sessionStorage.setItem("thanudi_admin_login_at", String(Date.now()));
             navigate("/admin/dashboard");
         } catch {
             setError("Access denied: invalid email or password.");
