@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { ArrowUpRight } from "lucide-react";
 import { db } from "@/firebase";
 import PageHeader from "@/components/pageHeader";
 import Reveal from "@/components/reveal";
+import ArtCard from "@/components/artCard";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
     Dialog,
@@ -96,35 +95,12 @@ export default function Gallery() {
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
                             {filtered.map((art, i) => (
                                 <Reveal key={art.id} delay={Math.min(i, 8) * 70}>
-                                    <Card
+                                    <ArtCard
+                                        title={art.title}
+                                        imageUrl={art.imageUrl}
+                                        badge={art.category}
                                         onClick={() => setSelected(art)}
-                                        className="group cursor-pointer overflow-hidden border-border/80 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-                                    >
-                                        <div className="relative aspect-[4/3] overflow-hidden">
-                                            <img
-                                                src={art.imageUrl}
-                                                alt={art.title}
-                                                loading="lazy"
-                                                decoding="async"
-                                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                            />
-                                            <div className="absolute inset-x-0 bottom-0 translate-y-full bg-gradient-to-t from-black/70 to-transparent p-4 pt-10 transition-transform duration-300 group-hover:translate-y-0">
-                                                <p className="flex items-center gap-1 text-sm font-semibold text-white">
-                                                    View artwork <ArrowUpRight className="size-4" />
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <CardContent className="p-5">
-                                            <div className="flex items-start justify-between gap-3">
-                                                <h3 className="font-semibold text-foreground">{art.title}</h3>
-                                                {art.category && (
-                                                    <Badge variant="secondary" className="rounded-full shrink-0">
-                                                        {art.category}
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                    />
                                 </Reveal>
                             ))}
                         </div>

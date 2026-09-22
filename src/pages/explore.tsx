@@ -6,9 +6,9 @@ import { ArrowRight, ChevronLeft, ChevronRight, Heart, Paintbrush, PenTool } fro
 import Hero from "@/components/hero";
 import Reveal from "@/components/reveal";
 import SectionHeading from "@/components/sectionHeading";
-import { Badge } from "@/components/ui/badge";
+import ArtCard from "@/components/artCard";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
@@ -96,35 +96,14 @@ export default function Explore() {
         fetchAll();
     }, []);
 
-    const ArtCard = ({ item, onClick }: { item: FeaturedItem; onClick?: () => void }) => (
-        <Card
+    const cardFor = (item: FeaturedItem, onClick?: () => void) => (
+        <ArtCard
+            title={item.title || item.name || "Untitled"}
+            imageUrl={getFirstImage(item)}
+            price={item.price}
+            badge={item.category || item.type}
             onClick={onClick}
-            className={cn(
-                "group cursor-pointer overflow-hidden border-border/80 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
-                onClick && "hover:border-primary/40",
-            )}
-        >
-            <div className="relative aspect-square overflow-hidden">
-                <img
-                    src={getFirstImage(item)}
-                    alt={item.title || item.name}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                {(item.category || item.type) && (
-                    <Badge className="absolute left-3 top-3 rounded-full bg-background/80 text-foreground backdrop-blur-sm">
-                        {item.category || item.type}
-                    </Badge>
-                )}
-            </div>
-            <CardContent className="p-5">
-                <p className="truncate font-semibold text-foreground">{item.title || item.name}</p>
-                {item.price && (
-                    <p className="mt-1 text-sm font-bold text-primary">LKR. {item.price}</p>
-                )}
-            </CardContent>
-        </Card>
+        />
     );
 
     return (
@@ -145,7 +124,7 @@ export default function Explore() {
                         <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
                             {featuredPosts.map((item, i) => (
                                 <Reveal key={item.id} delay={Math.min(i, 7) * 80}>
-                                    <ArtCard item={item} onClick={() => navigate("/gallery")} />
+                                    {cardFor(item, () => navigate("/gallery"))}
                                 </Reveal>
                             ))}
                         </div>
@@ -171,10 +150,10 @@ export default function Explore() {
                         <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
                             {featuredProducts.map((item, i) => (
                                 <Reveal key={item.id} delay={Math.min(i, 7) * 80}>
-                                    <ArtCard item={item} onClick={() => navigate(`/shop/${item.id}`)} />
-                                </Reveal>
-                            ))}
-                        </div>
+                                        {cardFor(item, () => navigate(`/shop/${item.id}`))}
+                                    </Reveal>
+                                ))}
+                            </div>
                         <div className="mt-10 text-center">
                             <Button variant="outline" className="rounded-full" onClick={() => navigate("/shop")}>
                                 Visit Shop
@@ -326,10 +305,10 @@ export default function Explore() {
                         <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
                             {shopItems.slice(0, 4).map((item, i) => (
                                 <Reveal key={item.id} delay={Math.min(i, 7) * 80}>
-                                    <ArtCard item={item} onClick={() => navigate(`/shop/${item.id}`)} />
-                                </Reveal>
-                            ))}
-                        </div>
+                                        {cardFor(item, () => navigate(`/shop/${item.id}`))}
+                                    </Reveal>
+                                ))}
+                            </div>
                         <div className="mt-10 text-center">
                             <Button className="rounded-full" onClick={() => navigate("/shop")}>
                                 View All Products

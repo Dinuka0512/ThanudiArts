@@ -5,10 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import PageHeader from "@/components/pageHeader";
 import Reveal from "@/components/reveal";
+import ArtCard from "@/components/artCard";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface Product {
@@ -126,38 +125,13 @@ export default function Shop() {
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             {paginated.map((product, i) => (
                                 <Reveal key={product.id} delay={Math.min(i, 8) * 70}>
-                                    <Card
+                                    <ArtCard
+                                        title={product.name}
+                                        imageUrl={getFirstImage(product)}
+                                        price={product.price}
+                                        badge={product.type}
                                         onClick={() => navigate(`/shop/${product.id}`)}
-                                        className="group cursor-pointer overflow-hidden border-border/80 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/40"
-                                    >
-                                        <div className="relative aspect-square overflow-hidden bg-secondary/30">
-                                            {getFirstImage(product) ? (
-                                                <img
-                                                    src={getFirstImage(product)}
-                                                    alt={product.name}
-                                                    loading="lazy"
-                                                    decoding="async"
-                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                />
-                                            ) : (
-                                                <div className="h-full w-full" />
-                                            )}
-                                            {product.type && (
-                                                <Badge className="absolute left-3 top-3 rounded-full bg-background/80 text-foreground backdrop-blur-sm">
-                                                    {product.type}
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <CardContent className="p-5">
-                                            <h3 className="truncate font-semibold text-foreground">{product.name}</h3>
-                                            {product.description && (
-                                                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                                                    {product.description}
-                                                </p>
-                                            )}
-                                            <p className="mt-2 font-bold text-primary">LKR. {product.price}</p>
-                                        </CardContent>
-                                    </Card>
+                                    />
                                 </Reveal>
                             ))}
                         </div>

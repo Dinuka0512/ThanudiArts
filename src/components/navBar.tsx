@@ -10,7 +10,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { ThemeToggle } from "@/components/themeToggle"
 import ThemeLogo from "@/components/themeLogo"
 import { cn } from "@/lib/utils"
 
@@ -59,7 +58,6 @@ export default function NavBar() {
         </nav>
 
         <div className="flex items-center gap-1.5">
-          <ThemeToggle />
           <div className="hidden lg:block">
             <Button
               onClick={goContact}

@@ -4,8 +4,8 @@ import { doc, getDoc, collection, query, where, getDocs } from "firebase/firesto
 import { db } from "@/firebase";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Reveal from "@/components/reveal";
+import ArtCard from "@/components/artCard";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
     Breadcrumb,
@@ -230,35 +230,19 @@ export default function ProductDetail() {
                         </Reveal>
                         <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
                             {relatedProducts.slice(0, 4).map((item, i) => {
-                                const img = item.images?.[0] || item.imageUrl || "";
-                                return (
-                                    <Reveal key={item.id} delay={Math.min(i, 7) * 80}>
-                                        <Card
-                                            onClick={() => navigate(`/shop/${item.id}`)}
-                                            className="group cursor-pointer overflow-hidden border-border/80 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
-                                        >
-                                            <div className="aspect-square overflow-hidden bg-secondary/30">
-                                                {img ? (
-                                                    <img
-                                                        src={img}
-                                                        alt={item.name}
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    />
-                                                ) : (
-                                                    <div className="h-full w-full" />
-                                                )}
-                                            </div>
-                                            <CardContent className="p-4">
-                                                <p className="truncate font-medium">{item.name}</p>
-                                                <p className="text-xs text-muted-foreground">{item.type}</p>
-                                                <p className="mt-1 text-sm font-bold text-primary">LKR. {item.price}</p>
-                                            </CardContent>
-                                        </Card>
-                                    </Reveal>
-                                );
-                            })}
+                                    const img = item.images?.[0] || item.imageUrl || "";
+                                    return (
+                                        <Reveal key={item.id} delay={Math.min(i, 7) * 80}>
+                                            <ArtCard
+                                                title={item.name}
+                                                imageUrl={img}
+                                                price={item.price}
+                                                badge={item.type}
+                                                onClick={() => navigate(`/shop/${item.id}`)}
+                                            />
+                                        </Reveal>
+                                    );
+                                })}
                         </div>
                     </div>
                 </section>
