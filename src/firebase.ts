@@ -4,13 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDvxmzG3pch9sv51kNdoMzDlQmxXD_T0U4",
-  authDomain: "thanudiarts-web.firebaseapp.com",
-  projectId: "thanudiarts-web",
-  storageBucket: "thanudiarts-web.firebasestorage.app",
-  messagingSenderId: "763882926088",
-  appId: "1:763882926088:web:be2252795583cf2f4c61bd",
-  measurementId: "G-DMRQ6WZFJH"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);

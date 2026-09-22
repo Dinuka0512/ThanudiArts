@@ -330,21 +330,27 @@ export default function Explore() {
                     {categories.length === 0 ? (
                         <p className="py-12 text-center text-muted-foreground">No categories yet.</p>
                     ) : (
-                        <div className="grid gap-6 md:grid-cols-3">
-                            {categories.map((item, index) => (
-                                <Reveal key={index} delay={index * 100}>
+                        <div className="overflow-hidden">
+                            <div className="marquee-strip gap-5 py-2">
+                            {[...categories, ...categories].map((item, index) => (
+                                <div key={index} className="w-[250px] shrink-0 py-2">
                                     <Card
                                         onClick={() => navigate("/gallery")}
-                                        className="group cursor-pointer border-border/80 p-8 text-center transition-all hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg"
+                                        className="group h-full cursor-pointer border-border/80 gap-2 p-5 text-sm transition-all hover:border-primary/50 hover:shadow-lg"
                                     >
-                                        <h3 className="font-display text-2xl font-semibold">{item.title}</h3>
-                                        <p className="mt-2 text-muted-foreground">{item.description}</p>
-                                        <p className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary transition-colors group-hover:gap-2">
+                                        <h3 className="truncate font-display text-lg font-semibold">
+                                            {item.title}
+                                        </h3>
+                                        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                                            {item.description}
+                                        </p>
+                                        <p className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary transition-colors group-hover:gap-2">
                                             View works <ArrowRight className="size-4" />
                                         </p>
                                     </Card>
-                                </Reveal>
+                                </div>
                             ))}
+                            </div>
                         </div>
                     )}
                 </div>

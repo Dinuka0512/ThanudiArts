@@ -11,12 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 interface ArtPost {
     id: string;
     title: string;
-    imageUrl: string;
+    imageUrl?: string;
+    images?: string[];
+    description?: string;
     category: string;
     featured: boolean;
 }
@@ -27,22 +30,23 @@ interface Category {
     description: string;
 }
 
-type SelectedImageState = (url: string) => void;
-
 export default function ManageGallery() {
     const [posts, setPosts] = useState<ArtPost[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [newTitle, setNewTitle] = useState("");
+    const [newDescription, setNewDescription] = useState("");
     const [newCategory, setNewCategory] = useState("");
-    const [newImageUrl, setNewImageUrl] = useState("");
+    const [newImages, setNewImages] = useState<string[]>([]);
     const [newFeatured, setNewFeatured] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editTitle, setEditTitle] = useState("");
+    const [editDescription, setEditDescription] = useState("");
     const [editCategory, setEditCategory] = useState("");
-    const [editImageUrl, setEditImageUrl] = useState("");
+    const [editImages, setEditImages] = useState<string[]>([]);
+    const [editUploading, setEditUploading] = useState(false);
     const editImageInputRef = useRef<HTMLInputElement>(null);
     const addImageInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,11 +71,14 @@ export default function ManageGallery() {
         setPosts(data.docs.map((doc) => ({ ...doc.data(), id: doc.id } as ArtPost)));
     };
 
-    const handleUploadImage = async (file: File, setImageUrl: SelectedImageState) => {
+    const getFirstImage = (post: ArtPost): string =>
+        post.images?.[0] || post.imageUrl || "";
+
+    const handleAddImage = async (file: File) => {
         setUploading(true);
         try {
             const url = await uploadToCloudinary(file);
-            setImageUrl(url);
+            setNewImages((prev) => [...prev, url]);
             toast.success("Image uploaded.");
         } catch (err) {
             console.error("Upload failed:", err);
@@ -81,10 +88,32 @@ export default function ManageGallery() {
         }
     };
 
+    const handleEditImage = async (file: File) => {
+        setEditUploading(true);
+        try {
+            const url = await uploadToCloudinary(file);
+            setEditImages((prev) => [...prev, url]);
+            toast.success("Image uploaded.");
+        } catch (err) {
+            console.error("Upload failed:", err);
+            toast.error("Image upload failed.");
+        } finally {
+            setEditUploading(false);
+        }
+    };
+
+    const removeNewImage = (index: number) => {
+        setNewImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const removeEditImage = (index: number) => {
+        setEditImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newTitle.trim() || !newImageUrl) {
-            toast.error("Please upload an image and enter a title.");
+        if (!newTitle.trim() || newImages.length === 0) {
+            toast.error("Please upload at least one image and enter a title.");
             return;
         }
         setLoading(true);
@@ -92,14 +121,17 @@ export default function ManageGallery() {
             await addDoc(postsCollection, {
                 ...firestoreSchema,
                 title: newTitle.trim(),
-                imageUrl: newImageUrl,
+                description: newDescription.trim(),
+                images: newImages,
+                imageUrl: newImages[0],
                 category: newCategory || "All",
                 featured: newFeatured,
             });
             toast.success("Artwork published.");
             setNewTitle("");
+            setNewDescription("");
             setNewCategory("");
-            setNewImageUrl("");
+            setNewImages([]);
             setNewFeatured(false);
             if (addImageInputRef.current) addImageInputRef.current.value = "";
             fetchData();
@@ -114,8 +146,9 @@ export default function ManageGallery() {
     const handleEdit = (post: ArtPost) => {
         setEditingId(post.id);
         setEditTitle(post.title);
+        setEditDescription(post.description || "");
         setEditCategory(post.category);
-        setEditImageUrl(post.imageUrl);
+        setEditImages(post.images || (post.imageUrl ? [post.imageUrl] : []));
     };
 
     const handleSave = async (id: string, e: React.FormEvent) => {
@@ -128,7 +161,9 @@ export default function ManageGallery() {
             await updateDoc(doc(db, "posts", id), {
                 title: editTitle.trim(),
                 category: editCategory || "All",
-                imageUrl: editImageUrl,
+                description: editDescription.trim(),
+                images: editImages,
+                imageUrl: editImages[0] || "",
             });
             toast.success("Artwork updated.");
             setEditingId(null);
@@ -164,8 +199,9 @@ export default function ManageGallery() {
     const handleCancel = () => {
         setEditingId(null);
         setEditTitle("");
+        setEditDescription("");
         setEditCategory("");
-        setEditImageUrl("");
+        setEditImages([]);
     };
 
     return (
@@ -187,6 +223,16 @@ export default function ManageGallery() {
                             />
                         </div>
                         <div className="space-y-2">
+                            <Label htmlFor="art-description">Description</Label>
+                            <Textarea
+                                id="art-description"
+                                value={newDescription}
+                                onChange={(e) => setNewDescription(e.target.value)}
+                                placeholder="Short description of the artwork"
+                                rows={3}
+                            />
+                        </div>
+                        <div className="space-y-2">
                             <Label htmlFor="art-category">Category</Label>
                             <Select value={newCategory} onValueChange={setNewCategory}>
                                 <SelectTrigger id="art-category">
@@ -203,15 +249,17 @@ export default function ManageGallery() {
                             </Select>
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <Label>Image</Label>
+                            <Label>Images</Label>
                             <div className="flex items-center gap-3">
                                 <Input
                                     ref={addImageInputRef}
                                     type="file"
                                     accept="image/*"
+                                    multiple
                                     onChange={(e) => {
-                                        const f = e.target.files?.[0];
-                                        if (f) handleUploadImage(f, setNewImageUrl);
+                                        const files = Array.from(e.target.files || []);
+                                        files.forEach((f) => handleAddImage(f));
+                                        e.target.value = "";
                                     }}
                                 />
                                 {uploading && (
@@ -220,10 +268,24 @@ export default function ManageGallery() {
                                         Uploading…
                                     </span>
                                 )}
-                                {newImageUrl && !uploading && (
-                                    <img src={newImageUrl} className="size-12 shrink-0 rounded-lg border object-cover" alt="" />
-                                )}
                             </div>
+                            {newImages.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    {newImages.map((url, i) => (
+                                        <div key={url} className="group relative">
+                                            <img src={url} className="h-16 w-16 rounded-lg border object-cover" alt="" />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeNewImage(i)}
+                                                className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 transition group-hover:opacity-100"
+                                                title="Remove image"
+                                            >
+                                                <X className="size-3" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div className="flex items-center justify-between gap-4 md:col-span-2">
                             <label className="flex cursor-pointer items-center gap-2 text-sm">
@@ -231,7 +293,7 @@ export default function ManageGallery() {
                                 <Star className={newFeatured ? "size-4 fill-current text-yellow-400" : "size-4 text-muted-foreground"} />
                                 Mark as Featured
                             </label>
-                            <Button type="submit" disabled={loading || !newImageUrl}>
+                            <Button type="submit" disabled={loading || newImages.length === 0}>
                                 {loading ? (
                                     <>
                                         <Loader2 className="size-4 animate-spin" />
@@ -264,11 +326,19 @@ export default function ManageGallery() {
                                     placeholder="Title"
                                     autoFocus
                                 />
+                                <Textarea
+                                    className="resize-none"
+                                    rows={2}
+                                    value={editDescription}
+                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    placeholder="Description"
+                                />
                                 <Select value={editCategory} onValueChange={setEditCategory}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Category" />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="All">All</SelectItem>
                                         {categories.map((cat) => (
                                             <SelectItem key={cat.id} value={cat.title}>
                                                 {cat.title}
@@ -276,27 +346,44 @@ export default function ManageGallery() {
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <div className="flex items-center gap-2">
+                                <div className="space-y-1">
+                                    <p className="text-xs text-muted-foreground">Images</p>
                                     <Input
                                         ref={editImageInputRef}
                                         type="file"
                                         accept="image/*"
+                                        multiple
                                         className="file:text-xs"
                                         onChange={(e) => {
-                                            const f = e.target.files?.[0];
-                                            if (f) handleUploadImage(f, setEditImageUrl);
+                                            const files = Array.from(e.target.files || []);
+                                            files.forEach((f) => handleEditImage(f));
+                                            e.target.value = "";
                                         }}
                                     />
-                                    {uploading && (
-                                        <span className="shrink-0 text-xs text-muted-foreground">
+                                    {editUploading && (
+                                        <p className="text-xs text-muted-foreground">
                                             <Loader2 className="mr-1 inline size-3 animate-spin" />
                                             Uploading…
-                                        </span>
+                                        </p>
+                                    )}
+                                    {editImages.length > 0 && (
+                                        <div className="flex flex-wrap gap-1">
+                                            {editImages.map((url, i) => (
+                                                <div key={url} className="group relative">
+                                                    <img src={url} className="h-12 w-12 rounded border object-cover" alt="" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeEditImage(i)}
+                                                        className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 transition group-hover:opacity-100"
+                                                        title="Remove image"
+                                                    >
+                                                        <X className="size-3" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
-                                {editImageUrl && !uploading && (
-                                    <img src={editImageUrl} className="h-28 w-full rounded-lg border object-cover" alt="" />
-                                )}
                                 <div className="flex gap-2">
                                     <Button type="submit" size="sm">Save</Button>
                                     <Button type="button" variant="ghost" size="sm" onClick={handleCancel}>
@@ -308,14 +395,20 @@ export default function ManageGallery() {
                         ) : (
                             <div>
                                 <div className="h-48 overflow-hidden">
-                                    <img src={post.imageUrl} className="h-full w-full object-cover" alt={post.title} loading="lazy" decoding="async" />
+                                    <img src={getFirstImage(post)} className="h-full w-full object-cover" alt={post.title} loading="lazy" decoding="async" />
                                 </div>
                                 <div className="p-4">
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <h4 className="font-semibold">{post.title}</h4>
+                                            {post.description && (
+                                                <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{post.description}</p>
+                                            )}
                                             <p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                                                 <Badge variant="secondary" className="rounded-full">{post.category}</Badge>
+                                                {(post.images?.length || (post.imageUrl ? 1 : 0)) > 1 && (
+                                                    <span>{post.images?.length || (post.imageUrl ? 1 : 0)} images</span>
+                                                )}
                                                 {post.featured && (
                                                     <span className="flex items-center gap-1 text-yellow-500">
                                                         <Star className="size-3 fill-current" />

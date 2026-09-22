@@ -91,7 +91,7 @@ export default function AdminLayout({
   )
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-border p-5 md:flex">
         {SidebarContent}
       </aside>

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
 import { Loader2, Lock, LogIn } from "lucide-react";
 import { auth } from "@/firebase";
 import ThemeLogo from "@/components/themeLogo";
@@ -17,6 +17,13 @@ export default function AdminLogin() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const unsub = onAuthStateChanged(auth, (u) => {
+            if (u) navigate("/admin/dashboard", { replace: true });
+        });
+        return unsub;
+    }, [navigate]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();

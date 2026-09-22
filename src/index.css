@@ -153,6 +153,20 @@
   animation: float-slow 7s ease-in-out infinite;
 }
 
+@keyframes marquee-slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.marquee-strip {
+  display: flex;
+  width: max-content;
+  animation: marquee-slide 45s linear infinite;
+}
+.marquee-strip:hover {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

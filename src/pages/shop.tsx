@@ -86,7 +86,7 @@ export default function Shop() {
             />
 
             {/* SEARCH + FILTERS */}
-            <section className="pb-10">
+            <section className="mt-10 pb-10">
                 <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6">
                     <Reveal className="relative mx-auto max-w-md">
                         <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

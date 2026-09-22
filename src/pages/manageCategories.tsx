@@ -133,21 +133,23 @@ export default function ManageCategories() {
                 </CardContent>
             </Card>
 
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {categories.length === 0 && (
-                    <p className="py-10 text-center text-muted-foreground">No categories yet. Add one above.</p>
+                    <p className="py-10 text-center text-muted-foreground sm:col-span-2 lg:col-span-3">No categories yet. Add one above.</p>
                 )}
                 {categories.map((cat) => (
                     <Card key={cat.id} className="border-border/80">
-                        <CardContent className="p-5">
+                        <CardContent className="p-4">
                             {editingId === cat.id ? (
-                                <form onSubmit={(e) => handleSave(cat.id, e)} className="space-y-3">
+                                <form onSubmit={(e) => handleSave(cat.id, e)} className="space-y-2">
                                     <Input
+                                        className="text-sm"
                                         value={editTitle}
                                         onChange={(e) => setEditTitle(e.target.value)}
                                         autoFocus
                                     />
                                     <Textarea
+                                        className="resize-none text-sm"
                                         rows={2}
                                         value={editDesc}
                                         onChange={(e) => setEditDesc(e.target.value)}
@@ -161,21 +163,21 @@ export default function ManageCategories() {
                                     </div>
                                 </form>
                             ) : (
-                                <div className="flex items-start justify-between">
-                                    <div>
-                                        <h4 className="font-semibold">{cat.title}</h4>
-                                        {cat.description && (
-                                            <p className="mt-1 text-sm text-muted-foreground">{cat.description}</p>
-                                        )}
+                                <div>
+                                    <div className="flex items-start justify-between gap-2">
+                                        <h4 className="truncate font-semibold">{cat.title}</h4>
+                                        <div className="flex shrink-0 gap-0.5">
+                                            <Button variant="ghost" size="icon" className="size-8" onClick={() => handleEdit(cat)} title="Edit">
+                                                <Pencil className="size-3.5" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="size-8 text-destructive hover:text-destructive" onClick={() => handleDelete(cat.id)} title="Delete">
+                                                <Trash2 className="size-3.5" />
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div className="ml-4 flex shrink-0 gap-1">
-                                        <Button variant="ghost" size="icon" onClick={() => handleEdit(cat)} title="Edit">
-                                            <Pencil className="size-4" />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleDelete(cat.id)} title="Delete">
-                                            <Trash2 className="size-4" />
-                                        </Button>
-                                    </div>
+                                    {cat.description && (
+                                        <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{cat.description}</p>
+                                    )}
                                 </div>
                             )}
                         </CardContent>
