@@ -1,6 +1,149 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
-html, body {
-  min-height: 100%;
-  overflow-y: auto;
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Playfair Display Variable", "Playfair Display", ui-serif, Georgia, serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 1rem;
+  --background: #faf6ee;
+  --foreground: #1c1712;
+  --card: #ffffff;
+  --card-foreground: #1c1712;
+  --popover: #ffffff;
+  --popover-foreground: #1c1712;
+  --primary: #a8842e;
+  --primary-foreground: #fffaf0;
+  --secondary: #f2ead6;
+  --secondary-foreground: #2c2418;
+  --muted: #f3eddd;
+  --muted-foreground: #7a6f5a;
+  --accent: #f0e6cb;
+  --accent-foreground: #2c2418;
+  --destructive: #c8422f;
+  --destructive-foreground: #fff7f4;
+  --border: #e8dec4;
+  --input: #e8dec4;
+  --ring: #a8842e;
+}
+
+.dark {
+  --background: #15110c;
+  --foreground: #f5efe1;
+  --card: #1e1912;
+  --card-foreground: #f5efe1;
+  --popover: #1e1912;
+  --popover-foreground: #f5efe1;
+  --primary: #d7b34a;
+  --primary-foreground: #1b1407;
+  --secondary: #2d2718;
+  --secondary-foreground: #f5efe1;
+  --muted: #282316;
+  --muted-foreground: #a99d86;
+  --accent: #3a321d;
+  --accent-foreground: #f5efe1;
+  --destructive: #e05546;
+  --destructive-foreground: #fff7f4;
+  --border: #383020;
+  --input: #383020;
+  --ring: #d7b34a;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  ::selection {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+}
+
+@utility glass {
+  background-color: color-mix(in srgb, var(--background) 72%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+@utility grain {
+  position: relative;
+}
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+}
+
+@keyframes drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(4%, -6%) scale(1.12); }
+  66% { transform: translate(-4%, 4%) scale(0.95); }
+}
+@keyframes drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-5%, 5%) scale(1.08); }
+  66% { transform: translate(5%, -3%) scale(1.05); }
+}
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+@utility animate-drift-a {
+  animation: drift-a 28s ease-in-out infinite;
+}
+@utility animate-drift-b {
+  animation: drift-b 34s ease-in-out infinite;
+}
+@utility animate-float-slow {
+  animation: float-slow 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

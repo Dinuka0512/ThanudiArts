@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { db } from "../firebase";
+import { db } from "@/firebase";
 import {
   doc, getDoc, collection, getDocs, query,
   orderBy, limit
 } from "firebase/firestore";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import Reveal from "@/components/reveal";
 
 interface Visit {
   path: string;
@@ -68,8 +71,10 @@ export default function VisitorAnalytics() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-4 border-gray-500 border-t-white rounded-full animate-spin"></div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className="h-28 rounded-2xl" />
+        ))}
       </div>
     );
   }
@@ -77,55 +82,70 @@ export default function VisitorAnalytics() {
   const maxCount = Math.max(...dailyCounts.map((d) => d.count), 1);
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl border border-white/10">
-          <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Total Visits</p>
-          <p className="text-3xl font-bold">{totalVisits}</p>
-        </div>
-        <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl border border-white/10">
-          <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Today</p>
-          <p className="text-3xl font-bold">{todayVisits}</p>
-        </div>
-        <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl border border-white/10">
-          <p className="text-xs uppercase tracking-wider text-gray-400 mb-1">Last 7 Days</p>
-          <p className="text-3xl font-bold">{dailyCounts.reduce((s, d) => s + d.count, 0)}</p>
-        </div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Reveal><Card className="border-border/80">
+          <CardContent className="p-6">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Total Visits</p>
+            <p className="mt-2 font-display text-3xl font-semibold">{totalVisits}</p>
+          </CardContent>
+        </Card></Reveal>
+        <Reveal delay={80}><Card className="border-border/80">
+          <CardContent className="p-6">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Today</p>
+            <p className="mt-2 font-display text-3xl font-semibold">{todayVisits}</p>
+          </CardContent>
+        </Card></Reveal>
+        <Reveal delay={160}><Card className="border-border/80">
+          <CardContent className="p-6">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Last 7 Days</p>
+            <p className="mt-2 font-display text-3xl font-semibold">
+              {dailyCounts.reduce((s, d) => s + d.count, 0)}
+            </p>
+          </CardContent>
+        </Card></Reveal>
       </div>
 
-      <div className="bg-white/5 backdrop-blur-lg p-6 rounded-2xl border border-white/10">
-        <h3 className="text-lg font-semibold mb-4">Visits (Last 7 Days)</h3>
-        <div className="flex items-end gap-2 h-32">
-          {dailyCounts.map((d) => (
-            <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
-              <span className="text-xs text-gray-400">{d.count}</span>
-              <div
-                className="w-full rounded-t-md transition-all"
-                style={{
-                  height: `${Math.max((d.count / maxCount) * 100, 4)}%`,
-                  backgroundColor: d.count > 0 ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.1)",
-                }}
-              />
-              <span className="text-[10px] text-gray-500 whitespace-nowrap">
-                {d.date.slice(5)}
-              </span>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Reveal><Card className="border-border/80">
+          <CardContent className="p-6">
+            <h3 className="mb-5 font-semibold">Visits (Last 7 Days)</h3>
+            <div className="flex h-32 items-end gap-2">
+              {dailyCounts.map((d) => (
+                <div key={d.date} className="flex flex-1 flex-col items-center gap-1">
+                  <span className="text-xs text-muted-foreground">{d.count}</span>
+                  <div
+                    className="w-full rounded-t-md bg-primary transition-all"
+                    style={{ height: `${Math.max((d.count / maxCount) * 100, 4)}%` }}
+                  />
+                  <span className="text-[10px] whitespace-nowrap text-muted-foreground">
+                    {d.date.slice(5)}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </CardContent>
+        </Card></Reveal>
 
-      <div className="bg-white/5 backdrop-blur-lg p-6 rounded-2xl border border-white/10">
-        <h3 className="text-lg font-semibold mb-4">Top Pages</h3>
-        <div className="space-y-2">
-          {topPages.map((p) => (
-            <div key={p.path} className="flex justify-between items-center">
-              <span className="text-gray-300">{p.path || "/"}</span>
-              <span className="text-sm text-gray-400">{p.count} visit{p.count !== 1 ? "s" : ""}</span>
+        <Reveal delay={100}><Card className="border-border/80">
+          <CardContent className="p-6">
+            <h3 className="mb-5 font-semibold">Top Pages</h3>
+            <div className="space-y-3">
+              {topPages.map((p) => (
+                <div key={p.path} className="flex items-center justify-between">
+                  <span className="truncate text-sm text-foreground">{p.path || "/"}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {p.count} visit{p.count !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              ))}
+              {topPages.length === 0 && (
+                <p className="text-sm text-muted-foreground">No data yet.</p>
+              )}
             </div>
-          ))}
-          {topPages.length === 0 && <p className="text-gray-500 text-sm">No data yet.</p>}
-        </div>
+          </CardContent>
+        </Card></Reveal>
       </div>
     </div>
-  );
+  )
 }

@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth, db } from "../firebase";
+import { db } from "@/firebase";
 import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
-import Bgvideo from "../assets/bg.mp4";
+import { CalendarDays, Loader2, Mail, MailOpen, MessageSquare, Reply, Trash2 } from "lucide-react";
+import AdminLayout from "@/components/adminLayout";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Message {
     id: string;
@@ -14,7 +16,6 @@ interface Message {
 }
 
 export default function ManageMessages() {
-    const navigate = useNavigate();
     const [messages, setMessages] = useState<Message[]>([]);
     const [pageLoading, setPageLoading] = useState(true);
     const [selected, setSelected] = useState<Message | null>(null);
@@ -43,112 +44,111 @@ export default function ManageMessages() {
         }
     };
 
+    const formatDate = (value?: string) =>
+        value ? new Date(value).toLocaleDateString() : "";
+
+    const formatDateTime = (value?: string) =>
+        value ? new Date(value).toLocaleString() : "";
+
     if (pageLoading) {
         return (
-            <div className="relative min-h-screen w-full flex items-center justify-center bg-black">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-10 h-10 border-4 border-gray-500 border-t-white rounded-full animate-spin"></div>
-                    <p className="text-gray-400">Loading...</p>
+            <AdminLayout badge="Messages" title="Messages" subtitle="Contact form submissions." active="messages">
+                <div className="flex h-full min-h-[60vh] items-center justify-center">
+                    <div className="flex flex-col items-center gap-4">
+                        <Loader2 className="size-8 animate-spin text-primary" />
+                        <p className="text-sm text-muted-foreground">Loading…</p>
+                    </div>
                 </div>
-            </div>
-        );
+            </AdminLayout>
+        )
     }
 
     return (
-        <div className="relative min-h-screen w-full flex overflow-hidden">
-            <video className="absolute top-0 left-0 w-full h-full object-cover -z-20" src={Bgvideo} autoPlay muted loop playsInline />
-            <div className="absolute inset-0 bg-black/70 -z-10"></div>
-
-            <aside className="w-64 bg-black/40 backdrop-blur-md border-r border-white/10 text-white flex flex-col p-6 hidden md:flex">
-                <h2 className="text-2xl font-bold mb-10 tracking-tight">Thanudi Arts <br/><span className="text-sm font-light text-gray-400">Admin Panel</span></h2>
-                <nav className="space-y-4 flex-1">
-                    <button onClick={() => navigate("/admin/dashboard")} className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition text-gray-400">Dashboard</button>
-                    <button onClick={() => navigate("/admin/gallery")} className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition text-gray-400">Gallery</button>
-                    <button onClick={() => navigate("/admin/products")} className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition text-gray-400">Products</button>
-                    <button onClick={() => navigate("/admin/categories")} className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition text-gray-400">Categories</button>
-                    <button onClick={() => navigate("/admin/layouts")} className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition text-gray-400">Sections</button>
-                    <button className="w-full text-left p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">Messages</button>
-                </nav>
-                <button onClick={async () => { await signOut(auth); navigate("/admin"); }} className="p-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/40 transition font-semibold">Logout</button>
-            </aside>
-
-            <main className="flex-1 h-screen overflow-y-auto p-6 md:p-12 text-white">
-                <div className="max-w-5xl mx-auto">
-                    <header className="mb-10">
-                        <h1 className="text-4xl font-bold">Messages</h1>
-                        <p className="text-gray-400">Contact form submissions from visitors.</p>
-                    </header>
-
-                    {messages.length === 0 ? (
-                        <p className="text-gray-500 text-center py-12">No messages yet.</p>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* List */}
-                            <div className="space-y-3">
-                                {messages.map((msg) => (
-                                    <button
-                                        key={msg.id}
-                                        onClick={() => setSelected(msg)}
-                                        className={`w-full text-left bg-white/10 backdrop-blur-sm p-4 rounded-2xl border transition ${
-                                            selected?.id === msg.id ? "border-white/40 bg-white/20" : "border-white/10 hover:bg-white/15"
-                                        }`}
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <div className="min-w-0 flex-1">
-                                                <p className="font-semibold truncate">{msg.name}</p>
-                                                <p className="text-xs text-gray-400 truncate">{msg.email}</p>
-                                            </div>
-                                            <span className="text-xs text-gray-500 shrink-0 ml-2">
-                                                {msg.createdAt ? new Date(msg.createdAt).toLocaleDateString() : ""}
-                                            </span>
+        <AdminLayout badge="Messages" title="Messages" subtitle="Contact form submissions from visitors." active="messages">
+            {messages.length === 0 ? (
+                <p className="py-12 text-center text-muted-foreground">No messages yet.</p>
+            ) : (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div className="space-y-3">
+                        {messages.map((msg) => (
+                            <Card
+                                key={msg.id}
+                                onClick={() => setSelected(msg)}
+                                className={`cursor-pointer border-border/80 transition ${
+                                    selected?.id === msg.id ? "border-primary/50 bg-primary/5" : "hover:border-primary/30"
+                                }`}
+                            >
+                                <CardContent className="p-4">
+                                    <div className="flex items-start justify-between">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="flex items-center gap-2 font-semibold">
+                                                <MessageSquare className="size-4 text-primary" />
+                                                <span className="truncate">{msg.name}</span>
+                                            </p>
+                                            <p className="mt-0.5 truncate text-xs text-muted-foreground">{msg.email}</p>
                                         </div>
-                                        <p className="text-sm text-gray-400 mt-2 line-clamp-2">{msg.message}</p>
-                                    </button>
-                                ))}
-                            </div>
+                                        <span className="ml-2 flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                                            <CalendarDays className="size-3" />
+                                            {formatDate(msg.createdAt)}
+                                        </span>
+                                    </div>
+                                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{msg.message}</p>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
 
-                            {/* Detail */}
-                            <div>
-                                {selected ? (
-                                    <div className="bg-white/10 backdrop-blur-sm p-6 rounded-3xl border border-white/10">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div>
-                                                <h3 className="text-xl font-bold">{selected.name}</h3>
-                                                <a href={`mailto:${selected.email}`} className="text-sm text-blue-400 hover:underline">{selected.email}</a>
-                                                <p className="text-xs text-gray-500 mt-1">
-                                                    {selected.createdAt ? new Date(selected.createdAt).toLocaleString() : ""}
-                                                </p>
-                                            </div>
-                                            <button
-                                                onClick={() => handleDelete(selected.id)}
-                                                className="text-red-400 hover:text-red-300 p-1"
-                                                title="Delete"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                                                </svg>
-                                            </button>
+                    <div>
+                        {selected ? (
+                            <Card className="border-border/80">
+                                <CardContent className="p-6">
+                                    <div className="mb-4 flex items-start justify-between">
+                                        <div>
+                                            <h3 className="flex items-center gap-2 font-display text-xl font-semibold">
+                                                <MailOpen className="size-5 text-primary" />
+                                                {selected.name}
+                                            </h3>
+                                            <a href={`mailto:${selected.email}`} className="mt-1 inline-block text-sm text-primary hover:underline">
+                                                {selected.email}
+                                            </a>
+                                            <p className="mt-1 text-xs text-muted-foreground">
+                                                {formatDateTime(selected.createdAt)}
+                                            </p>
                                         </div>
-                                        <div className="bg-black/30 rounded-xl p-4">
-                                            <p className="text-gray-200 whitespace-pre-wrap leading-relaxed">{selected.message}</p>
-                                        </div>
-                                        <a
-                                            href={`mailto:${selected.email}?subject=Re: Thanudi Arts inquiry`}
-                                            className="inline-block mt-4 bg-white text-black px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
+                                        <Badge variant="secondary" className="rounded-full">Inbox</Badge>
+                                    </div>
+                                    <div className="rounded-xl bg-muted/60 p-4">
+                                        <p className="whitespace-pre-wrap leading-relaxed text-foreground">{selected.message}</p>
+                                    </div>
+                                    <div className="mt-4 flex gap-2">
+                                        <Button asChild>
+                                            <a href={`mailto:${selected.email}?subject=Re: Thanudi Arts inquiry`}>
+                                                <Reply className="size-4" />
+                                                Reply via Email
+                                            </a>
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            className="text-destructive hover:text-destructive"
+                                            onClick={() => handleDelete(selected.id)}
                                         >
-                                            Reply via Email
-                                        </a>
+                                            <Trash2 className="size-4" />
+                                            Delete
+                                        </Button>
                                     </div>
-                                ) : (
-                                    <div className="flex items-center justify-center h-full text-gray-500">
-                                        <p>Select a message to view</p>
-                                    </div>
-                                )}
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <div className="flex h-full min-h-64 items-center justify-center rounded-xl border border-dashed text-muted-foreground">
+                                <p className="flex items-center gap-2 text-sm">
+                                    <Mail className="size-4" />
+                                    Select a message to view
+                                </p>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
-            </main>
-        </div>
-    );
+            )}
+        </AdminLayout>
+    )
 }

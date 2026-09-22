@@ -2,6 +2,10 @@ export async function uploadToCloudinary(file: File): Promise<string> {
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
     const preset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
+    if (!cloudName || !preset) {
+        throw new Error("Missing Cloudinary env vars. Create a .env file from .env.example.");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", preset);

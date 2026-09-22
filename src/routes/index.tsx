@@ -1,23 +1,162 @@
+import { lazy, Suspense } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase";
-import Explore from "../pages/explore";
-import About from "../pages/about";
-import Contact from "../pages/contact.tsx";
-import Gallery from "../pages/gallery.tsx";
-import Shop from "../pages/shop.tsx";
-import ProductDetail from "../pages/productDetail.tsx";
-import AdminLogin from "../pages/adminLoginPage.tsx";
-import AdminDashboard from "../pages/adminPage.tsx";
-import ManageCategories from "../pages/manageCategories.tsx";
-import ManageGallery from "../pages/manageGallery.tsx";
-import ManageProducts from "../pages/manageProducts.tsx";
-import ManageLayouts from "../pages/manageLayouts.tsx";
-import ManageMessages from "../pages/manageMessages.tsx";
+import { auth } from "@/firebase";
+import PublicLayout from "@/components/publicLayout";
+import PageLoader from "@/components/pageLoader";
+
+const Explore = lazy(() => import("@/pages/explore"));
+const About = lazy(() => import("@/pages/about"));
+const Contact = lazy(() => import("@/pages/contact"));
+const Gallery = lazy(() => import("@/pages/gallery"));
+const Shop = lazy(() => import("@/pages/shop"));
+const ProductDetail = lazy(() => import("@/pages/productDetail"));
+const AdminLogin = lazy(() => import("@/pages/adminLoginPage"));
+const AdminDashboard = lazy(() => import("@/pages/adminPage"));
+const ManageCategories = lazy(() => import("@/pages/manageCategories"));
+const ManageGallery = lazy(() => import("@/pages/manageGallery"));
+const ManageProducts = lazy(() => import("@/pages/manageProducts"));
+const ManageLayouts = lazy(() => import("@/pages/manageLayouts"));
+const ManageMessages = lazy(() => import("@/pages/manageMessages"));
+
+const Loading = () => (
+  <div className="flex min-h-screen items-center justify-center bg-background">
+    <PageLoader />
+  </div>
+);
+
+export default function AppRoutes() {
+  return (
+    <Routes>
+      <Route element={<PublicLayout />}>
+        <Route
+          path="/"
+          element={
+            <Suspense fallback={<Loading />}>
+              <Explore />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <Suspense fallback={<Loading />}>
+              <About />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <Suspense fallback={<Loading />}>
+              <Contact />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/gallery"
+          element={
+            <Suspense fallback={<Loading />}>
+              <Gallery />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/shop"
+          element={
+            <Suspense fallback={<Loading />}>
+              <Shop />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/shop/:id"
+          element={
+            <Suspense fallback={<Loading />}>
+              <ProductDetail />
+            </Suspense>
+          }
+        />
+      </Route>
+
+      <Route
+        path="/admin"
+        element={
+          <Suspense fallback={<Loading />}>
+            <AdminLogin />
+          </Suspense>
+        }
+      />
+
+      <Route
+        path="/admin/dashboard"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/categories"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoute>
+              <ManageCategories />
+            </ProtectedRoute>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/gallery"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoute>
+              <ManageGallery />
+            </ProtectedRoute>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/products"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoute>
+              <ManageProducts />
+            </ProtectedRoute>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/layouts"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoute>
+              <ManageLayouts />
+            </ProtectedRoute>
+          </Suspense>
+        }
+      />
+      <Route
+        path="/admin/messages"
+        element={
+          <Suspense fallback={<Loading />}>
+            <ProtectedRoute>
+              <ManageMessages />
+            </ProtectedRoute>
+          </Suspense>
+        }
+      />
+
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<unknown | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,34 +167,25 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return unsub;
   }, []);
 
-  if (loading) return <div className="text-white flex justify-center items-center h-screen">Loading...</div>;
+  if (loading) return <Loading />;
   if (!user) return <Navigate to="/admin" replace />;
   return <>{children}</>;
 }
 
-export default function AppRoutes() {
+function NotFound() {
   return (
-    <Routes>
-      <Route path="/" element={<Explore />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/gallery" element={<Gallery />} />
-      <Route path="/shop" element={<Shop />} />
-      <Route path="/shop/:id" element={<ProductDetail />} />
-      
-      {/* Login Page */}
-      <Route path="/admin" element={<AdminLogin />} />
-      
-      {/* Dashboard Page (protected) */}
-      <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-      <Route path="/admin/categories" element={<ProtectedRoute><ManageCategories /></ProtectedRoute>} />
-      <Route path="/admin/gallery" element={<ProtectedRoute><ManageGallery /></ProtectedRoute>} />
-      <Route path="/admin/products" element={<ProtectedRoute><ManageProducts /></ProtectedRoute>} />
-      <Route path="/admin/layouts" element={<ProtectedRoute><ManageLayouts /></ProtectedRoute>} />
-      <Route path="/admin/messages" element={<ProtectedRoute><ManageMessages /></ProtectedRoute>} />
-
-      {/* 404 Catch-all (Optional but helpful) */}
-      <Route path="*" element={<div className="text-white">Page Not Found</div>} />
-    </Routes>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 text-center">
+      <p className="font-display text-6xl font-semibold text-primary">404</p>
+      <h1 className="text-xl font-semibold">Page not found</h1>
+      <p className="max-w-md text-muted-foreground">
+        The page you&apos;re looking for doesn&apos;t exist or has moved.
+      </p>
+      <a
+        href="/"
+        className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+      >
+        Back to home
+      </a>
+    </div>
   );
 }

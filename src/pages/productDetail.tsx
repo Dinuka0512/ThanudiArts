@@ -1,9 +1,21 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
-import NavBar from "../componens/navBar.tsx";
-import Bgvideo from "../assets/bg.mp4";
+import { db } from "@/firebase";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import Reveal from "@/components/reveal";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { cn } from "@/lib/utils";
 
 interface Product {
     id: string;
@@ -25,44 +37,49 @@ export default function ProductDetail() {
 
     useEffect(() => {
         if (!id) return;
-        getDoc(doc(db, "products", id)).then((snap) => {
-            if (snap.exists()) {
-                const data = { ...snap.data(), id: snap.id } as Product;
-                setProduct(data);
-                getDocs(query(collection(db, "products"), where("type", "==", data.type))).then((relatedSnap) => {
-                    const related = relatedSnap.docs
-                        .map((d) => ({ ...d.data(), id: d.id } as Product))
-                        .filter((p) => p.id !== data.id);
-                    setRelatedProducts(related);
+        getDoc(doc(db, "products", id))
+            .then((snap) => {
+                if (snap.exists()) {
+                    const data = { ...snap.data(), id: snap.id } as Product;
+                    setProduct(data);
+                    setCurrentImage(0);
+                    getDocs(query(collection(db, "products"), where("type", "==", data.type)))
+                        .then((relatedSnap) => {
+                            const related = relatedSnap.docs
+                                .map((d) => ({ ...d.data(), id: d.id } as Product))
+                                .filter((p) => p.id !== data.id);
+                            setRelatedProducts(related);
+                            setLoading(false);
+                        })
+                        .catch(() => {
+                            setRelatedProducts([]);
+                            setLoading(false);
+                        });
+                } else {
                     setLoading(false);
-                });
-            } else {
+                }
+            })
+            .catch(() => {
+                setProduct(null);
                 setLoading(false);
-            }
-        });
+            });
     }, [id]);
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-100">
-                <NavBar />
-                <div className="flex items-center justify-center h-screen">
-                    <div className="w-10 h-10 border-4 border-gray-300 border-t-black rounded-full animate-spin"></div>
-                </div>
+            <div className="flex min-h-[60vh] items-center justify-center">
+                <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
         );
     }
 
     if (!product) {
         return (
-            <div className="min-h-screen bg-gray-100">
-                <NavBar />
-                <div className="flex flex-col items-center justify-center h-screen gap-4">
-                    <p className="text-gray-500 text-lg">Product not found.</p>
-                    <button onClick={() => navigate("/shop")} className="bg-black text-white px-6 py-2 rounded-full">
-                        Back to Shop
-                    </button>
-                </div>
+            <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
+                <p className="text-lg text-muted-foreground">Product not found.</p>
+                <Button className="rounded-full" onClick={() => navigate("/shop")}>
+                    Back to shop
+                </Button>
             </div>
         );
     }
@@ -72,136 +89,180 @@ export default function ProductDetail() {
         : product.imageUrl ? [product.imageUrl] : [];
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <NavBar />
+        <div className="bg-background">
+            {/* BREADCRUMB */}
+            <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+                <Breadcrumb>
+                    <BreadcrumbList>
+                        <BreadcrumbItem>
+                            <BreadcrumbLink asChild>
+                                <Link to="/shop">Shop</Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage className="line-clamp-1">{product.name}</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
+            </div>
 
-            {/* HERO */}
-            <section className="bg-black text-white py-5 text-center px-4 relative">
-                <video
-                    className="absolute top-0 left-0 w-full h-full object-cover"
-                    src={Bgvideo}
-                    autoPlay muted loop playsInline
-                />
-                <div className="absolute inset-0 bg-black/60"></div>
-                
-            </section>
-
-            {/* PRODUCT DETAIL */}
-            <section className="py-12 px-5 max-w-6xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {/* DETAIL */}
+            <section className="py-10">
+                <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 md:grid-cols-2 md:gap-14">
                     {/* Images */}
-                    <div>
+                    <Reveal>
                         {allImages.length > 0 ? (
                             <>
-                                <div className="rounded-2xl overflow-hidden bg-white shadow-lg mb-4">
+                                <div className="overflow-hidden rounded-3xl border border-border bg-secondary/30 shadow-sm">
                                     <img
                                         src={allImages[currentImage]}
                                         alt={product.name}
-                                        className="w-full h-96 object-cover"
+                                        className="aspect-square w-full object-cover"
                                     />
                                 </div>
                                 {allImages.length > 1 && (
                                     <>
-                                        <div className="flex gap-3 overflow-x-auto pb-2">
-                                            {allImages.map((url, i) => (
-                                                <button
-                                                    key={i}
-                                                    onClick={() => setCurrentImage(i)}
-                                                    className={`shrink-0 rounded-xl overflow-hidden border-2 transition ${
-                                                        i === currentImage ? "border-black" : "border-transparent hover:border-gray-300"
-                                                    }`}
-                                                >
-                                                    <img src={url} alt="" className="w-20 h-20 object-cover" />
-                                                </button>
-                                            ))}
-                                        </div>
-                                        <div className="flex gap-2 justify-center mt-4">
-                                            <button
-                                                onClick={() => setCurrentImage((p) => (p === 0 ? allImages.length - 1 : p - 1))}
-                                                className="bg-white border border-gray-300 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition"
+                                        <div className="mt-4 flex items-center justify-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                aria-label="Previous image"
+                                                className="rounded-full"
+                                                onClick={() =>
+                                                    setCurrentImage((p) => (p === 0 ? allImages.length - 1 : p - 1))
+                                                }
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                                            </button>
-                                            <button
-                                                onClick={() => setCurrentImage((p) => (p === allImages.length - 1 ? 0 : p + 1))}
-                                                className="bg-white border border-gray-300 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-100 transition"
+                                                <ChevronLeft className="size-4" />
+                                            </Button>
+                                            <div className="flex gap-2 overflow-x-auto px-1">
+                                                {allImages.map((url, i) => (
+                                                    <button
+                                                        key={i}
+                                                        onClick={() => setCurrentImage(i)}
+                                                        aria-label={`View image ${i + 1}`}
+                                                        className={cn(
+                                                            "shrink-0 overflow-hidden rounded-xl border-2 transition",
+                                                            i === currentImage
+                                                                ? "border-primary"
+                                                                : "border-border opacity-60 hover:opacity-100",
+                                                        )}
+                                                    >
+                                                        <img src={url} alt="" loading="lazy" className="size-16 object-cover sm:size-20" />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                aria-label="Next image"
+                                                className="rounded-full"
+                                                onClick={() =>
+                                                    setCurrentImage((p) => (p === allImages.length - 1 ? 0 : p + 1))
+                                                }
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                                            </button>
+                                                <ChevronRight className="size-4" />
+                                            </Button>
                                         </div>
                                     </>
                                 )}
                             </>
                         ) : (
-                            <div className="h-96 bg-gray-300 rounded-2xl"></div>
+                            <div className="aspect-square rounded-3xl bg-secondary/40" />
                         )}
-                    </div>
+                    </Reveal>
 
                     {/* Info */}
-                    <div>
-                        <h2 className="text-3xl font-bold mb-2">{product.name}</h2>
-                        <p className="text-gray-500 mb-4">{product.type}</p>
-                        <p className="text-3xl font-bold mb-6">LKR.{product.price}</p>
+                    <Reveal delay={120} className="flex flex-col">
+                        {product.type && (
+                            <Badge variant="secondary" className="mb-4 w-fit rounded-full">
+                                {product.type}
+                            </Badge>
+                        )}
+                        <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+                            {product.name}
+                        </h2>
+                        <p className="mt-4 font-display text-2xl font-semibold text-primary">
+                            LKR. {product.price}
+                        </p>
 
                         {product.description && (
-                            <div className="mb-8">
-                                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                                <p className="text-gray-600 leading-relaxed whitespace-pre-line">{product.description}</p>
+                            <div className="mt-8">
+                                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Description
+                                </h3>
+                                <p className="mt-2 leading-relaxed whitespace-pre-line text-muted-foreground">
+                                    {product.description}
+                                </p>
                             </div>
                         )}
 
-                        <button
-                            onClick={() => navigate("/contact")}
-                            className="w-full bg-black text-white py-3 rounded-full text-lg font-semibold hover:bg-gray-800 transition"
-                        >
-                            Buy / Order
-                        </button>
-
-                        <button
-                            onClick={() => navigate("/shop")}
-                            className="w-full mt-3 border border-gray-300 text-gray-700 py-3 rounded-full text-lg font-semibold hover:bg-gray-50 transition"
-                        >
-                            Continue Shopping
-                        </button>
-                    </div>
+                        <div className="mt-10 flex flex-col gap-3">
+                            <Button
+                                className="w-full rounded-full text-base"
+                                size="lg"
+                                onClick={() => navigate("/contact")}
+                            >
+                                Buy / Order
+                                <ArrowRight className="size-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="w-full rounded-full"
+                                size="lg"
+                                onClick={() => navigate("/shop")}
+                            >
+                                Continue shopping
+                            </Button>
+                        </div>
+                    </Reveal>
                 </div>
             </section>
 
-            {/* RELATED PRODUCTS */}
+            {/* RELATED */}
             {relatedProducts.length > 0 && (
-                <section className="pb-16 px-5 max-w-6xl mx-auto">
-                    <h2 className="text-2xl font-bold mb-8">More in {product.type}</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {relatedProducts.map((item) => {
-                            const img = item.images?.[0] || item.imageUrl || "";
-                            return (
-                                <div
-                                    key={item.id}
-                                    onClick={() => navigate(`/shop/${item.id}`)}
-                                    className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-gray-300 hover:shadow-lg transition-all duration-300 cursor-pointer"
-                                >
-                                    <div className="aspect-square overflow-hidden">
-                                        {img ? (
-                                            <img src={img} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
-                                        ) : (
-                                            <div className="w-full h-full bg-gray-200"></div>
-                                        )}
-                                    </div>
-                                    <div className="p-4">
-                                        <p className="font-medium text-gray-900 text-sm truncate">{item.name}</p>
-                                        <p className="text-xs text-gray-400 mt-0.5">{item.type}</p>
-                                        <p className="text-sm font-bold text-gray-900 mt-2">LKR.{item.price}</p>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                <section className="pb-20">
+                    <div className="mx-auto max-w-6xl px-4 sm:px-6">
+                        <Reveal>
+                            <h2 className="mb-8 font-display text-2xl font-semibold tracking-tight">
+                                More in {product.type}
+                            </h2>
+                        </Reveal>
+                        <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+                            {relatedProducts.slice(0, 4).map((item, i) => {
+                                const img = item.images?.[0] || item.imageUrl || "";
+                                return (
+                                    <Reveal key={item.id} delay={Math.min(i, 7) * 80}>
+                                        <Card
+                                            onClick={() => navigate(`/shop/${item.id}`)}
+                                            className="group cursor-pointer overflow-hidden border-border/80 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+                                        >
+                                            <div className="aspect-square overflow-hidden bg-secondary/30">
+                                                {img ? (
+                                                    <img
+                                                        src={img}
+                                                        alt={item.name}
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    />
+                                                ) : (
+                                                    <div className="h-full w-full" />
+                                                )}
+                                            </div>
+                                            <CardContent className="p-4">
+                                                <p className="truncate font-medium">{item.name}</p>
+                                                <p className="text-xs text-muted-foreground">{item.type}</p>
+                                                <p className="mt-1 text-sm font-bold text-primary">LKR. {item.price}</p>
+                                            </CardContent>
+                                        </Card>
+                                    </Reveal>
+                                );
+                            })}
+                        </div>
                     </div>
                 </section>
             )}
-
-            <footer className="text-center text-gray-500 py-6">
-                © 2026 Thanudi Arts. All rights reserved.
-            </footer>
         </div>
-    );
+    )
 }

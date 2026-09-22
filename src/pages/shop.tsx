@@ -1,9 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
-import NavBar from "../componens/navBar.tsx";
+import { db } from "@/firebase";
 import { useNavigate } from "react-router-dom";
-import Bgvideo from "../assets/bg.mp4";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import PageHeader from "@/components/pageHeader";
+import Reveal from "@/components/reveal";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface Product {
     id: string;
@@ -15,7 +21,7 @@ interface Product {
     imageUrl?: string;
 }
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 12;
 
 export default function Shop() {
     const navigate = useNavigate();
@@ -26,12 +32,17 @@ export default function Shop() {
     const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
-        getDocs(collection(db, "products")).then((snap) => {
-            const prods = snap.docs.map((doc) => ({ ...doc.data(), id: doc.id } as any));
-            setProducts(prods);
-            const cats = [...new Set(prods.map((p: any) => p.type).filter(Boolean))] as string[];
-            setCategories(cats);
-        });
+        getDocs(collection(db, "products"))
+            .then((snap) => {
+                const prods = snap.docs.map((doc) => ({ ...doc.data(), id: doc.id } as Product));
+                setProducts(prods);
+                const cats = [...new Set(prods.map((p) => p.type).filter(Boolean))] as string[];
+                setCategories(cats);
+            })
+            .catch(() => {
+                setProducts([]);
+                setCategories([]);
+            });
     }, []);
 
     const filtered = useMemo(() => {
@@ -56,228 +67,154 @@ export default function Shop() {
         setCurrentPage(1);
     };
 
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(e.target.value);
-        setCurrentPage(1);
-    };
+    const getFirstImage = (p: Product) =>
+        (p.images && p.images[0]) || p.imageUrl || "";
+
+    const pillClass = (isActive: boolean) =>
+        cn(
+            "rounded-full px-5 py-2 text-sm font-medium transition-colors",
+            isActive
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-accent",
+        );
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <NavBar />
+        <div className="bg-background">
+            <PageHeader
+                eyebrow="Shop"
+                title="Art shop"
+                subtitle="Purchase unique artworks and custom designs directly from the artist."
+            />
 
-            {/* HERO */}
-            <section className="bg-black text-white py-20 text-center px-4 relative">
-                <video
-                    className="absolute top-0 left-0 w-full h-full object-cover"
-                    src={Bgvideo}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                />
-                <div className="absolute inset-0 bg-black/60"></div>
-                <div className="relative">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                        Art Shop
-                    </h1>
-                    <p className="max-w-xl mx-auto text-lg text-gray-300">
-                        Purchase unique artworks and custom designs directly from the artist.
-                    </p>
-                </div>
-            </section>
-
-            {/* FILTERS & SEARCH */}
-            <section className="pt-8 pb-4 px-5 max-w-7xl mx-auto space-y-4">
-                {/* Search */}
-                <div className="max-w-md mx-auto">
-                    <input
-                        type="text"
-                        placeholder="Search products..."
-                        value={searchQuery}
-                        onChange={handleSearch}
-                        className="w-full px-5 py-3 rounded-full border border-gray-300 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                    />
-                </div>
-
-                {/* Category Filter */}
-                <div className="flex flex-wrap gap-3 justify-center">
-                    <button
-                        onClick={() => handleCategoryChange("All")}
-                        className={`px-5 py-2 rounded-full font-medium transition ${
-                            activeCategory === "All"
-                                ? "bg-black text-white"
-                                : "bg-white text-black hover:bg-gray-200"
-                        }`}
-                    >
-                        All
-                    </button>
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => handleCategoryChange(cat)}
-                            className={`px-5 py-2 rounded-full font-medium transition ${
-                                activeCategory === cat
-                                    ? "bg-black text-white"
-                                    : "bg-white text-black hover:bg-gray-200"
-                            }`}
-                        >
-                            {cat}
+            {/* SEARCH + FILTERS */}
+            <section className="pb-10">
+                <div className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6">
+                    <Reveal className="relative mx-auto max-w-md">
+                        <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            type="text"
+                            placeholder="Search products…"
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            className="rounded-full pl-11"
+                        />
+                    </Reveal>
+                    <Reveal delay={120} className="flex flex-wrap justify-center gap-2">
+                        <button onClick={() => handleCategoryChange("All")} className={pillClass(activeCategory === "All")}>
+                            All
                         </button>
-                    ))}
-                </div>
-            </section>
-
-            {/* PRODUCT GRID */}
-            <section className="pb-16 px-5 max-w-7xl mx-auto">
-                {paginated.length === 0 ? (
-                    <p className="text-center text-gray-500 py-12">
-                        {searchQuery ? "No products match your search." : "No products in this category yet."}
-                    </p>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-                        {paginated.map((product) => {
-                            const allImages = product.images && product.images.length > 0
-                                ? product.images
-                                : product.imageUrl ? [product.imageUrl] : [];
-                            return (
-                                <div
-                                    key={product.id}
-                                    onClick={() => navigate(`/shop/${product.id}`)}
-                                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition cursor-pointer"
-                                >
-                                    {/* Image Gallery */}
-                                    {allImages.length > 0 ? (
-                                        <ImageGallery images={allImages} name={product.name} />
-                                    ) : (
-                                        <div className="h-64 bg-gray-300"></div>
-                                    )}
-
-                                    {/* Info */}
-                                    <div className="p-6">
-                                        <h3 className="text-xl font-semibold mb-1">
-                                            {product.name}
-                                        </h3>
-                                        <p className="text-gray-600 mb-2">
-                                            {product.type}
-                                        </p>
-                                        {product.description && (
-                                            <p className="text-gray-500 text-sm mb-3 line-clamp-2">
-                                                {product.description}
-                                            </p>
-                                        )}
-                                        <p className="text-lg font-bold mb-4">
-                                            LKR.{product.price}
-                                        </p>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-
-                {/* PAGINATION */}
-                {totalPages > 1 && (
-                    <div className="flex justify-center items-center gap-2 mt-12">
-                        <button
-                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                            className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-sm font-medium hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                        >
-                            Prev
-                        </button>
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                            <button
-                                key={page}
-                                onClick={() => setCurrentPage(page)}
-                                className={`w-10 h-10 rounded-lg text-sm font-medium transition ${
-                                    currentPage === page
-                                        ? "bg-black text-white"
-                                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100"
-                                }`}
-                            >
-                                {page}
+                        {categories.map((cat) => (
+                            <button key={cat} onClick={() => handleCategoryChange(cat)} className={pillClass(activeCategory === cat)}>
+                                {cat}
                             </button>
                         ))}
-                        <button
-                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
-                            className="px-4 py-2 rounded-lg bg-white border border-gray-300 text-sm font-medium hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                        >
-                            Next
-                        </button>
-                    </div>
-                )}
+                    </Reveal>
+                </div>
+            </section>
+
+            {/* GRID */}
+            <section className="pb-16">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
+                    {paginated.length === 0 ? (
+                        <p className="py-16 text-center text-muted-foreground">
+                            {searchQuery ? "No products match your search." : "No products in this category yet."}
+                        </p>
+                    ) : (
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            {paginated.map((product, i) => (
+                                <Reveal key={product.id} delay={Math.min(i, 8) * 70}>
+                                    <Card
+                                        onClick={() => navigate(`/shop/${product.id}`)}
+                                        className="group cursor-pointer overflow-hidden border-border/80 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/40"
+                                    >
+                                        <div className="relative aspect-square overflow-hidden bg-secondary/30">
+                                            {getFirstImage(product) ? (
+                                                <img
+                                                    src={getFirstImage(product)}
+                                                    alt={product.name}
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <div className="h-full w-full" />
+                                            )}
+                                            {product.type && (
+                                                <Badge className="absolute left-3 top-3 rounded-full bg-background/80 text-foreground backdrop-blur-sm">
+                                                    {product.type}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <CardContent className="p-5">
+                                            <h3 className="truncate font-semibold text-foreground">{product.name}</h3>
+                                            {product.description && (
+                                                <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                                                    {product.description}
+                                                </p>
+                                            )}
+                                            <p className="mt-2 font-bold text-primary">LKR. {product.price}</p>
+                                        </CardContent>
+                                    </Card>
+                                </Reveal>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* PAGINATION */}
+                    {totalPages > 1 && (
+                        <Reveal delay={150} className="mt-12 flex items-center justify-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                aria-label="Previous page"
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            >
+                                <ChevronLeft className="size-4" />
+                            </Button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                <Button
+                                    key={page}
+                                    variant={currentPage === page ? "default" : "outline"}
+                                    size="icon"
+                                    aria-label={`Page ${page}`}
+                                    onClick={() => setCurrentPage(page)}
+                                    className="rounded-lg"
+                                >
+                                    {page}
+                                </Button>
+                            ))}
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                aria-label="Next page"
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                            >
+                                <ChevronRight className="size-4" />
+                            </Button>
+                        </Reveal>
+                    )}
+                </div>
             </section>
 
             {/* CTA */}
-            <section className="bg-black text-white py-16 text-center px-4">
-                <h3 className="text-3xl font-semibold mb-4">
-                    Need Something Custom?
-                </h3>
-                <p className="text-gray-300 mb-6">
-                    Contact me for personalized artwork and special requests.
-                </p>
-                <button
-                    className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-200 transition"
-                    onClick={() => navigate("/contact")}
-                >
-                    Contact Me
-                </button>
+            <section className="border-t border-border/60 bg-secondary/40 py-20 text-center">
+                <Reveal>
+                    <h3 className="font-display text-3xl font-semibold tracking-tight">
+                        Need something custom?
+                    </h3>
+                    <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+                        Contact me for personalized artwork and special requests.
+                    </p>
+                    <Button className="mt-8 rounded-full" size="lg" onClick={() => navigate("/contact")}>
+                        Contact me
+                    </Button>
+                </Reveal>
             </section>
-
-            <footer className="text-center text-gray-500 py-6">
-                © 2026 Thanudi Arts. All rights reserved.
-            </footer>
         </div>
-    );
-}
-
-function ImageGallery({ images, name }: { images: string[]; name: string }) {
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    if (images.length === 1) {
-        return (
-            <div className="h-64 overflow-hidden">
-                <img src={images[0]} className="w-full h-full object-cover" alt={name} />
-            </div>
-        );
-    }
-
-    return (
-        <div className="relative group">
-            <div className="h-64 overflow-hidden">
-                <img src={images[currentIndex]} className="w-full h-full object-cover" alt={name} />
-            </div>
-            {images.length > 1 && (
-                <>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-                        }}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-                        }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-                        {images.map((_, i) => (
-                            <span
-                                key={i}
-                                className={`w-2 h-2 rounded-full transition ${i === currentIndex ? "bg-white" : "bg-white/50"}`}
-                            />
-                        ))}
-                    </div>
-                </>
-            )}
-        </div>
-    );
+    )
 }

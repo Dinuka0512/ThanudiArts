@@ -1,66 +1,47 @@
 import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase";
-import Bgvideo from "../assets/bg.mp4";
-import VisitorAnalytics from "../components/visitorAnalytics";
+import { ArrowUpRight, FolderKanban, Images, Package } from "lucide-react";
+import AdminLayout from "@/components/adminLayout";
+import Reveal from "@/components/reveal";
+import VisitorAnalytics from "@/components/visitorAnalytics";
+import { Card, CardContent } from "@/components/ui/card";
+
+const QUICK_ACTIONS = [
+    { key: "gallery", title: "Gallery", subtitle: "Manage artworks", to: "/admin/gallery", icon: Images },
+    { key: "products", title: "Products", subtitle: "Manage shop items", to: "/admin/products", icon: Package },
+    { key: "categories", title: "Categories", subtitle: "Manage categories", to: "/admin/categories", icon: FolderKanban },
+] as const;
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
 
     return (
-        <div className="relative min-h-screen w-full flex overflow-hidden">
-            <video
-                className="absolute top-0 left-0 w-full h-full object-cover -z-20"
-                src={Bgvideo} autoPlay muted loop playsInline
-            />
-            <div className="absolute inset-0 bg-black/70 -z-10"></div>
+        <AdminLayout badge="Admin" title="Dashboard" subtitle="Manage your site content." active="dashboard">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                {QUICK_ACTIONS.map((action, i) => (
+                    <Reveal key={action.key} delay={i * 100}>
+                        <Card
+                            onClick={() => navigate(action.to)}
+                            className="group cursor-pointer border-border/80 transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40"
+                        >
+                            <CardContent className="flex items-start justify-between p-6">
+                                <div>
+                                    <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                        <action.icon className="size-5" />
+                                    </div>
+                                    <h3 className="font-semibold">{action.title}</h3>
+                                    <p className="mt-1 text-sm text-muted-foreground">{action.subtitle}</p>
+                                </div>
+                                <ArrowUpRight className="size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
+                            </CardContent>
+                        </Card>
+                    </Reveal>
+                ))}
+            </div>
 
-            <aside className="w-64 bg-black/40 backdrop-blur-md border-r border-white/10 text-white flex flex-col p-6 hidden md:flex">
-                <h2 className="text-2xl font-bold mb-10 tracking-tight">Thanudi Arts <br/><span className="text-sm font-light text-gray-400">Admin Panel</span></h2>
-                <nav className="space-y-4 flex-1">
-                    <button className="w-full text-left p-3 rounded-xl bg-white/10 hover:bg-white/20 transition">Dashboard</button>
-                    <button onClick={() => navigate("/admin/gallery")} className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition text-gray-400">Gallery</button>
-                    <button onClick={() => navigate("/admin/products")} className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition text-gray-400">Products</button>
-                    <button onClick={() => navigate("/admin/categories")} className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition text-gray-400">Categories</button>
-                    <button onClick={() => navigate("/admin/layouts")} className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition text-gray-400">Sections</button>
-                    <button onClick={() => navigate("/admin/messages")} className="w-full text-left p-3 rounded-xl hover:bg-white/10 transition text-gray-400">Messages</button>
-                </nav>
-                <button 
-                    onClick={async () => { await signOut(auth); navigate("/admin"); }}
-                    className="p-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/40 transition font-semibold"
-                >
-                    Logout
-                </button>
-            </aside>
-
-            <main className="flex-1 h-screen overflow-y-auto p-6 md:p-12 text-white">
-                <div className="max-w-4xl mx-auto">
-                    <header className="mb-12">
-                        <h1 className="text-4xl font-bold">Dashboard</h1>
-                        <p className="text-gray-400">Manage your site content.</p>
-                    </header>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                        <button onClick={() => navigate("/admin/gallery")} className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl border border-white/10 text-left hover:bg-white/20 transition">
-                            <h3 className="text-2xl font-bold mb-2">Gallery</h3>
-                            <p className="text-gray-400">Manage artworks</p>
-                        </button>
-                        <button onClick={() => navigate("/admin/products")} className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl border border-white/10 text-left hover:bg-white/20 transition">
-                            <h3 className="text-2xl font-bold mb-2">Products</h3>
-                            <p className="text-gray-400">Manage shop items</p>
-                        </button>
-                        <button onClick={() => navigate("/admin/categories")} className="bg-white/10 backdrop-blur-lg p-8 rounded-3xl border border-white/10 text-left hover:bg-white/20 transition">
-                            <h3 className="text-2xl font-bold mb-2">Categories</h3>
-                            <p className="text-gray-400">Manage categories</p>
-                        </button>
-                    </div>
-
-                    <section>
-                        <h2 className="text-2xl font-bold mb-6">Analytics</h2>
-                        <VisitorAnalytics />
-                    </section>
-                </div>
-            </main>
-        </div>
-    );
+            <Reveal delay={150} className="mt-12">
+                <h2 className="mb-6 font-display text-2xl font-semibold tracking-tight">Analytics</h2>
+                <VisitorAnalytics />
+            </Reveal>
+        </AdminLayout>
+    )
 }
