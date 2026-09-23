@@ -124,7 +124,7 @@ export default function Gallery() {
                             No artworks in this category yet.
                         </p>
                     ) : (
-                        <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
+                        <div className="columns-2 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
                             {filtered.map((art, i) => {
                                 const artImages = getArtImages(art);
                                 return (
