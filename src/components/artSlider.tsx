@@ -44,13 +44,13 @@ export default function ArtSlider({ images, alt, interval = 3500, paused = false
                 />
             ))}
             {images.length > 1 && (
-                <div className="absolute left-3 top-3 flex gap-1.5">
+                <div className="absolute bottom-3 right-3 flex items-center gap-1 backdrop-blur-sm">
                     {images.map((_, i) => (
                         <span
                             key={i}
                             className={cn(
-                                "h-1.5 rounded-full bg-white/70 shadow-sm transition-all duration-300",
-                                i === current ? "w-4" : "w-1.5 opacity-50",
+                                "h-px bg-background shadow-[0_1px_6px_rgba(0,0,0,0.45)] transition-all duration-300",
+                                i === current ? "w-6" : "w-2.5 opacity-60",
                             )}
                         />
                     ))}

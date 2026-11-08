@@ -1,18 +1,21 @@
 import { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/firebase";
+import { ArrowUpRight, X } from "lucide-react";
 import PageHeader from "@/components/pageHeader";
 import Reveal from "@/components/reveal";
 import ArtSlider from "@/components/artSlider";
+import SEO from "@/components/seo";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogDescription,
     DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { START_PROJECT_MESSAGE, whatsappLink } from "@/lib/whatsapp";
 
 interface Artwork {
     id: string;
@@ -34,22 +37,37 @@ function ArtHoverCard({ art, images, onOpen }: { art: Artwork; images: string[];
             onMouseEnter={() => setHovering(true)}
             onMouseLeave={() => setHovering(false)}
             onClick={onOpen}
-            className="group relative block w-full overflow-hidden rounded-[1.25rem] border border-black/5 text-left shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
+            className="group block w-full text-left"
         >
-            <ArtSlider images={images} alt={art.title} paused={hovering} />
-            <div className="absolute inset-0 flex flex-col justify-end gap-1 bg-white/50 p-4 opacity-0 backdrop-blur-md transition-opacity duration-300 group-hover:opacity-100">
-                <h3 className="font-semibold text-foreground">{art.title}</h3>
+            <div className="relative overflow-hidden rounded-xl bg-secondary/40">
+                <ArtSlider images={images} alt={art.title} paused={hovering} />
+
+                <div className="pointer-events-none absolute inset-0 bg-foreground/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                <span className="pointer-events-none absolute right-3 top-3 flex translate-y-1 items-center gap-1 rounded-full bg-background px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[0.12em] text-foreground opacity-0 shadow-sm transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    View
+                    <ArrowUpRight className="size-3" />
+                </span>
+
                 {art.description && (
-                    <p className="line-clamp-3 text-sm text-foreground/80">{art.description}</p>
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-black/80 via-black/35 to-transparent p-4 pt-12 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                        <p className="line-clamp-2 text-xs leading-relaxed text-white/85">
+                            {art.description}
+                        </p>
+                    </div>
                 )}
+            </div>
+
+            <div className="flex items-baseline justify-between gap-3 px-1 pt-2.5">
+                <h3 className="truncate text-sm font-medium tracking-[-0.01em]">{art.title}</h3>
                 {art.category && (
-                    <Badge variant="secondary" className="mt-1 w-fit rounded-full">
+                    <span className="shrink-0 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                         {art.category}
-                    </Badge>
+                    </span>
                 )}
             </div>
         </button>
-    )
+    );
 }
 
 export default function Gallery() {
@@ -74,71 +92,76 @@ export default function Gallery() {
     }, []);
 
     const filtered = activeCategory === "All" ? artworks : artworks.filter((a) => a.category === activeCategory);
+    const tabs = ["All", ...categories];
 
     return (
         <div className="bg-background">
+            <SEO
+                title="Art Gallery"
+                description="Browse selected hand-drawn and digital artworks by Thanudi Arts, featuring original pieces created in a contemporary Sri Lankan art studio."
+                path="/gallery"
+            />
             <PageHeader
-                eyebrow="Portfolio"
-                title="Art gallery"
-                subtitle="A collection of hand-drawn and digital artworks crafted with passion."
+                title={<>Selected <span className="editorial">works</span></>}
+                subtitle="A collection of hand-drawn and digital artworks, each made in the studio with care and intention."
             />
 
             {/* FILTER */}
-            <section className="mt-10 pb-10">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6">
-                    <Reveal className="flex flex-wrap justify-center gap-2">
-                        <button
-                            onClick={() => setActiveCategory("All")}
-                            className={cn(
-                                "rounded-full px-5 py-2 text-sm font-medium transition-colors",
-                                activeCategory === "All"
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-secondary text-secondary-foreground hover:bg-accent",
-                            )}
-                        >
-                            All
-                        </button>
-                        {categories.map((cat) => (
+            <section className="sticky top-16 z-30 border-b border-border bg-background/90 backdrop-blur-xl md:top-20">
+                <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                        {tabs.map((cat) => (
                             <button
                                 key={cat}
                                 onClick={() => setActiveCategory(cat)}
                                 className={cn(
-                                    "rounded-full px-5 py-2 text-sm font-medium transition-colors",
+                                    "group relative py-1 text-[10px] font-medium uppercase tracking-[0.18em] transition-colors",
                                     activeCategory === cat
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-secondary text-secondary-foreground hover:bg-accent",
+                                        ? "text-foreground"
+                                        : "text-muted-foreground hover:text-foreground",
                                 )}
                             >
                                 {cat}
+                                <span
+                                    className={cn(
+                                        "absolute -bottom-0.5 left-0 h-px bg-foreground transition-all duration-300",
+                                        activeCategory === cat ? "w-full" : "w-0 group-hover:w-full",
+                                    )}
+                                />
                             </button>
                         ))}
-                    </Reveal>
+                    </div>
+                    <span className="eyebrow shrink-0">
+                        {filtered.length} {filtered.length === 1 ? "work" : "works"}
+                    </span>
                 </div>
             </section>
 
             {/* GRID */}
-            <section className="pb-24">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6">
+            <section className="pb-20 pt-10 md:pb-28 md:pt-12">
+                <div className="mx-auto max-w-[1440px] px-4 sm:px-8">
                     {filtered.length === 0 ? (
-                        <p className="py-16 text-center text-muted-foreground">
+                        <p className="border-t border-border py-16 text-sm text-muted-foreground">
                             No artworks in this category yet.
                         </p>
                     ) : (
-                        <div className="columns-2 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
+                        <div className="columns-2 gap-4 sm:gap-5 lg:columns-3 xl:columns-4">
                             {filtered.map((art, i) => {
                                 const artImages = getArtImages(art);
                                 return (
-                                    <Reveal key={art.id} delay={Math.min(i, 8) * 60}>
-                                        <div className="mb-4 break-inside-avoid">
-                                            <ArtHoverCard
-                                                art={art}
-                                                images={artImages}
-                                                onOpen={() => {
-                                                    setSelected(art);
-                                                    setSelectedImageIndex(0);
-                                                }}
-                                            />
-                                        </div>
+                                    <Reveal
+                                        key={art.id}
+                                        delay={Math.min(i, 8) * 50}
+                                        className="mb-5 break-inside-avoid"
+                                    >
+                                        <ArtHoverCard
+                                            art={art}
+                                            images={artImages}
+                                            onOpen={() => {
+                                                setSelected(art);
+                                                setSelectedImageIndex(0);
+                                            }}
+                                        />
                                     </Reveal>
                                 );
                             })}
@@ -148,69 +171,97 @@ export default function Gallery() {
             </section>
 
             {/* CTA */}
-            <section className="border-t border-border/60 bg-secondary/40 py-20 text-center">
-                <Reveal>
-                    <h3 className="font-display text-3xl font-semibold tracking-tight">
-                        Want a custom artwork?
+            <section className="border-t border-border bg-secondary/25 py-16 text-center md:py-24">
+                <Reveal className="mx-auto max-w-[1440px] px-4 sm:px-8">
+                    <p className="eyebrow">Commissions</p>
+                    <h3 className="mx-auto mt-5 max-w-2xl text-4xl font-medium leading-[0.98] tracking-[-0.045em] sm:text-5xl">
+                        Want something made <span className="editorial">only for you?</span>
                     </h3>
-                    <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-                        Request a personalized art piece made just for you.
+                    <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">
+                        Portraits, gifts, illustrations and one-off pieces — commissioned around your story.
                     </p>
-                    <Button className="mt-8 rounded-full" onClick={() => window.location.assign("/contact")} size="lg">
-                        Contact me
+                    <Button
+                        asChild
+                        className="mt-8 h-11 rounded-none px-6 text-[10px] uppercase tracking-[0.18em]"
+                    >
+                        <a
+                            href={whatsappLink(START_PROJECT_MESSAGE)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Enquire about a commission
+                            <ArrowUpRight className="size-4" />
+                        </a>
                     </Button>
                 </Reveal>
             </section>
 
             {/* LIGHTBOX */}
             <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
-                <DialogContent className="max-w-3xl p-0 overflow-hidden sm:rounded-3xl">
+                <DialogContent
+                    showCloseButton={false}
+                    className="max-w-4xl gap-0 overflow-hidden rounded-none border-border bg-background p-0"
+                >
                     <DialogTitle className="sr-only">{selected?.title}</DialogTitle>
                     <DialogDescription className="sr-only">
                         {selected?.category} artwork
                     </DialogDescription>
+
                     {selected && (() => {
                         const images = getArtImages(selected);
                         const current = images[Math.min(selectedImageIndex, images.length - 1)];
                         return (
                             <div>
-                                {current && (
-                                    <img
-                                        src={current}
-                                        alt={selected.title}
-                                        className="max-h-[70vh] w-full object-contain bg-black/5"
-                                    />
-                                )}
+                                <div className="relative bg-foreground">
+                                    {current && (
+                                        <img
+                                            src={current}
+                                            alt={selected.title}
+                                            className="max-h-[68vh] w-full object-contain"
+                                        />
+                                    )}
+                                    <DialogClose className="absolute right-3 top-3 flex size-9 items-center justify-center bg-background text-foreground transition-colors hover:bg-background/85">
+                                        <X className="size-4" />
+                                        <span className="sr-only">Close</span>
+                                    </DialogClose>
+                                </div>
+
                                 {images.length > 1 && (
-                                    <div className="flex items-center justify-center gap-2 bg-black/5 px-6 pb-2 pt-3">
+                                    <div className="flex items-center gap-2 overflow-x-auto border-t border-border bg-background px-5 py-3">
                                         {images.map((url, i) => (
                                             <button
                                                 key={url}
                                                 type="button"
                                                 onClick={() => setSelectedImageIndex(i)}
-                                                className={`size-14 shrink-0 overflow-hidden rounded-lg border-2 transition ${
-                                                    i === selectedImageIndex ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
-                                                }`}
+                                                className={cn(
+                                                    "size-12 shrink-0 overflow-hidden border transition",
+                                                    i === selectedImageIndex
+                                                        ? "border-foreground"
+                                                        : "border-transparent opacity-50 hover:opacity-100",
+                                                )}
                                             >
                                                 <img src={url} alt="" className="h-full w-full object-cover" />
                                             </button>
                                         ))}
-                                        <span className="ml-1 text-xs text-muted-foreground">
+                                        <span className="ml-2 text-[10px] tabular-nums text-muted-foreground">
                                             {selectedImageIndex + 1} / {images.length}
                                         </span>
                                     </div>
                                 )}
-                                <div className="flex items-center justify-between gap-3 px-6 py-4">
+
+                                <div className="flex items-start justify-between gap-4 border-t border-border px-5 py-4">
                                     <div>
-                                        <h3 className="font-semibold">{selected.title}</h3>
+                                        <h3 className="text-base font-medium tracking-[-0.02em]">{selected.title}</h3>
                                         {selected.description && (
-                                            <p className="mt-1 text-sm text-muted-foreground">{selected.description}</p>
+                                            <p className="mt-1 max-w-xl text-xs leading-relaxed text-muted-foreground">
+                                                {selected.description}
+                                            </p>
                                         )}
                                     </div>
                                     {selected.category && (
-                                        <Badge variant="secondary" className="rounded-full shrink-0">
+                                        <span className="shrink-0 text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                                             {selected.category}
-                                        </Badge>
+                                        </span>
                                     )}
                                 </div>
                             </div>
@@ -219,5 +270,5 @@ export default function Gallery() {
                 </DialogContent>
             </Dialog>
         </div>
-    )
+    );
 }

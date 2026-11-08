@@ -208,7 +208,7 @@ export default function ManageProducts() {
     const pageLoader = () => (
         <div className="flex h-full min-h-[60vh] items-center justify-center">
             <div className="flex flex-col items-center gap-4">
-                <Loader2 className="size-8 animate-spin text-primary" />
+                <Loader2 className="size-8 animate-spin text-foreground" />
                 <p className="text-sm text-muted-foreground">Loading…</p>
             </div>
         </div>
@@ -221,7 +221,7 @@ export default function ManageProducts() {
             <Card className="mb-8 border-border/80">
                 <CardContent className="p-6">
                     <h3 className="mb-4 flex items-center gap-2 font-semibold">
-                        <PackagePlus className="size-4 text-primary" />
+                        <PackagePlus className="size-4 text-foreground" />
                         Add New Product
                     </h3>
                     <form onSubmit={handleAdd} className="space-y-4">
@@ -423,7 +423,7 @@ export default function ManageProducts() {
                                         <div>
                                             <h4 className="font-semibold">{product.name}</h4>
                                             <p className="text-xs text-muted-foreground">{product.type}</p>
-                                            <p className="mt-1 text-sm font-semibold text-primary">{product.price}</p>
+                                            <p className="mt-1 text-sm font-semibold text-foreground">{product.price}</p>
                                             {(product.images?.length || (product.imageUrl ? 1 : 0)) > 1 && (
                                                 <p className="mt-1 text-xs text-muted-foreground">
                                                     {product.images?.length || (product.imageUrl ? 1 : 0)} images

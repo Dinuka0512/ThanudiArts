@@ -2,20 +2,20 @@ import { useState } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import emailjs from "@emailjs/browser";
 import { toast } from "sonner";
-import { Mail, MapPin, Phone, Send } from "lucide-react";
+import { ArrowUpRight, Mail, MapPin, Phone, Send } from "lucide-react";
 import { db } from "@/firebase";
 import PageHeader from "@/components/pageHeader";
 import Reveal from "@/components/reveal";
+import SEO from "@/components/seo";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 const CONTACT_INFO = [
-  { icon: Mail, label: "Email", value: "thanudiarts@gmail.com" },
-  { icon: Phone, label: "Phone", value: "+94 77 123 4567" },
-  { icon: MapPin, label: "Location", value: "Sri Lanka" },
+  { icon: Mail, label: "Email", value: "thanudiarts@gmail.com", href: "mailto:thanudiarts@gmail.com" },
+  { icon: Phone, label: "Phone", value: "+94 77 123 4567", href: "tel:+94771234567" },
+  { icon: MapPin, label: "Location", value: "Sri Lanka", href: undefined },
 ]
 
 export default function Contact() {
@@ -67,93 +67,146 @@ export default function Contact() {
 
     return (
         <div className="bg-background">
+            <SEO
+                title="Contact"
+                description="Contact Thanudi Arts for artwork enquiries, custom commissions, collaborations, or questions about original pieces from the Sri Lankan studio."
+                path="/contact"
+            />
             <PageHeader
-                eyebrow="Contact"
-                title="Let's talk"
-                subtitle="Have a question, custom request, or collaboration idea? I'd love to hear from you."
+                title={<>Let&apos;s make <span className="editorial">something.</span></>}
+                subtitle="Have a question, a custom request, or a collaboration in mind? I'd love to hear from you."
             />
 
-            <section className="py-8 pb-24">
-                <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 md:grid-cols-2 md:gap-12">
+            <section className="py-16 md:py-24">
+                <div className="mx-auto grid max-w-[1440px] gap-12 px-4 sm:px-8 md:grid-cols-12 md:gap-8">
                     {/* INFO */}
-                    <Reveal className="space-y-6">
-                        <h2 className="font-display text-2xl font-semibold tracking-tight">
-                            Get in touch
+                    <Reveal className="md:col-span-5">
+                        <h2 className="text-3xl font-medium leading-[1.02] tracking-[-0.04em] sm:text-4xl">
+                            Tell me about
+                            <br />
+                            <span className="editorial">your idea.</span>
                         </h2>
-                        <div className="grid gap-4">
-                            {CONTACT_INFO.map((item, i) => (
-                                <Reveal key={item.label} delay={i * 100}>
-                                    <Card className="border-border/80 shadow-sm">
-                                        <CardContent className="flex items-center gap-4 p-5">
-                                            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                                <item.icon className="size-5" />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                                                    {item.label}
-                                                </p>
-                                                <p className="font-medium text-foreground">{item.value}</p>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Reveal>
-                            ))}
-                        </div>
-                        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-                            I usually respond within 24 hours. Custom artwork and collaborations
-                            are always welcome.
+                        <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                            Whether it&apos;s a portrait, a gift, an illustration or a full commission,
+                            every project starts with a conversation.
                         </p>
+
+                        <div className="mt-10 border-t border-border">
+                            {CONTACT_INFO.map((item) => {
+                                const content = (
+                                    <>
+                                        <div className="flex items-center gap-4">
+                                            <span className="flex size-10 shrink-0 items-center justify-center border border-border bg-card text-foreground">
+                                                <item.icon className="size-4" />
+                                            </span>
+                                            <div>
+                                                <p className="eyebrow">{item.label}</p>
+                                                <p className="mt-1 text-sm font-medium text-foreground">{item.value}</p>
+                                            </div>
+                                        </div>
+                                        {item.href && (
+                                            <ArrowUpRight className="size-4 text-muted-foreground transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground" />
+                                        )}
+                                    </>
+                                );
+
+                                return item.href ? (
+                                    <a
+                                        key={item.label}
+                                        href={item.href}
+                                        className="group flex items-center justify-between gap-4 border-b border-border py-5 transition-colors"
+                                    >
+                                        {content}
+                                    </a>
+                                ) : (
+                                    <div key={item.label} className="flex items-center justify-between gap-4 border-b border-border py-5">
+                                        {content}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mt-8 flex items-start gap-3">
+                            <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-brand" />
+                            <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">
+                                Custom artwork and collaborations are always welcome. The studio
+                                usually responds within 24 hours.
+                            </p>
+                        </div>
                     </Reveal>
 
                     {/* FORM */}
-                    <Reveal delay={120}>
-                        <Card className="border-border/80 shadow-sm">
-                            <CardContent className="p-6 sm:p-8">
-                                <h3 className="font-display text-2xl font-semibold tracking-tight">
-                                    Send a message
-                                </h3>
-                                <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-                                    <div className="grid gap-5 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="contact-name">Name</Label>
-                                            <Input
-                                                id="contact-name"
-                                                placeholder="Your name"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="contact-email">Email</Label>
-                                            <Input
-                                                id="contact-email"
-                                                type="email"
-                                                placeholder="you@example.com"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="contact-message">Message</Label>
-                                        <Textarea
-                                            id="contact-message"
-                                            rows={6}
-                                            placeholder="Tell me about your idea…"
-                                            value={message}
-                                            onChange={(e) => setMessage(e.target.value)}
+                    <Reveal delay={120} className="md:col-span-7">
+                        <div className="border border-border bg-card p-6 sm:p-10">
+                            <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
+                                <p className="eyebrow">All fields required</p>
+                            </div>
+
+                            <h3 className="mt-7 text-2xl font-medium tracking-[-0.035em] sm:text-3xl">
+                                Send a message
+                            </h3>
+
+                            <form onSubmit={handleSubmit} className="mt-8 space-y-7">
+                                <div className="grid gap-7 sm:grid-cols-2">
+                                    <div>
+                                        <Label htmlFor="contact-name" className="eyebrow mb-2">
+                                            Name
+                                        </Label>
+                                        <Input
+                                            id="contact-name"
+                                            placeholder="Your name"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
                                             required
+                                            className="h-11 rounded-none border-0 border-b border-border bg-transparent px-0 text-sm shadow-none focus-visible:border-foreground focus-visible:ring-0"
                                         />
                                     </div>
-                                    <Button type="submit" disabled={sending} className="w-full rounded-full sm:w-auto">
+                                    <div>
+                                        <Label htmlFor="contact-email" className="eyebrow mb-2">
+                                            Email
+                                        </Label>
+                                        <Input
+                                            id="contact-email"
+                                            type="email"
+                                            placeholder="you@example.com"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                            className="h-11 rounded-none border-0 border-b border-border bg-transparent px-0 text-sm shadow-none focus-visible:border-foreground focus-visible:ring-0"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="contact-message" className="eyebrow mb-2">
+                                        Message
+                                    </Label>
+                                    <Textarea
+                                        id="contact-message"
+                                        rows={5}
+                                        placeholder="Tell me about your idea…"
+                                        value={message}
+                                        onChange={(e) => setMessage(e.target.value)}
+                                        required
+                                        className="min-h-32 rounded-none border-0 border-b border-border bg-transparent px-0 py-2 text-sm shadow-none focus-visible:border-foreground focus-visible:ring-0"
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center sm:justify-between">
+                                    <p className="max-w-[15rem] text-xs leading-relaxed text-muted-foreground">
+                                        Your details are only used to reply to this enquiry.
+                                    </p>
+                                    <Button
+                                        type="submit"
+                                        disabled={sending}
+                                        className="h-12 w-full rounded-none px-7 text-[10px] uppercase tracking-[0.18em] sm:w-auto"
+                                    >
                                         {sending ? "Sending…" : "Send message"}
                                         <Send className="size-4" />
                                     </Button>
-                                </form>
-                            </CardContent>
-                        </Card>
+                                </div>
+                            </form>
+                        </div>
                     </Reveal>
                 </div>
             </section>

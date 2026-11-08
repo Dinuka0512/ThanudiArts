@@ -55,7 +55,7 @@ export default function ManageMessages() {
             <AdminLayout badge="Messages" title="Messages" subtitle="Contact form submissions." active="messages">
                 <div className="flex h-full min-h-[60vh] items-center justify-center">
                     <div className="flex flex-col items-center gap-4">
-                        <Loader2 className="size-8 animate-spin text-primary" />
+                        <Loader2 className="size-8 animate-spin text-foreground" />
                         <p className="text-sm text-muted-foreground">Loading…</p>
                     </div>
                 </div>
@@ -82,7 +82,7 @@ export default function ManageMessages() {
                                     <div className="flex items-start justify-between">
                                         <div className="min-w-0 flex-1">
                                             <p className="flex items-center gap-2 font-semibold">
-                                                <MessageSquare className="size-4 text-primary" />
+                                                <MessageSquare className="size-4 text-foreground" />
                                                 <span className="truncate">{msg.name}</span>
                                             </p>
                                             <p className="mt-0.5 truncate text-xs text-muted-foreground">{msg.email}</p>
@@ -105,10 +105,10 @@ export default function ManageMessages() {
                                     <div className="mb-4 flex items-start justify-between">
                                         <div>
                                             <h3 className="flex items-center gap-2 font-display text-xl font-semibold">
-                                                <MailOpen className="size-5 text-primary" />
+                                                <MailOpen className="size-5 text-foreground" />
                                                 {selected.name}
                                             </h3>
-                                            <a href={`mailto:${selected.email}`} className="mt-1 inline-block text-sm text-primary hover:underline">
+                                            <a href={`mailto:${selected.email}`} className="mt-1 inline-block text-sm text-foreground hover:underline">
                                                 {selected.email}
                                             </a>
                                             <p className="mt-1 text-xs text-muted-foreground">

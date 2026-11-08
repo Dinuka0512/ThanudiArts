@@ -228,7 +228,7 @@ export default function ManageLayouts() {
     const pageLoader = () => (
         <div className="flex h-full min-h-[60vh] items-center justify-center">
             <div className="flex flex-col items-center gap-4">
-                <Loader2 className="size-8 animate-spin text-primary" />
+                <Loader2 className="size-8 animate-spin text-foreground" />
                 <p className="text-sm text-muted-foreground">Loading…</p>
             </div>
         </div>
@@ -241,7 +241,7 @@ export default function ManageLayouts() {
             <Card className="mb-8 border-border/80">
                 <CardContent className="p-6">
                     <h3 className="mb-4 flex items-center gap-2 font-semibold">
-                        <LayoutTemplate className="size-4 text-primary" />
+                        <LayoutTemplate className="size-4 text-foreground" />
                         New Section
                     </h3>
                     <form onSubmit={handleAdd} className="space-y-4">

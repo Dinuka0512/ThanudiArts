@@ -25,13 +25,13 @@ export default function AdminDashboard() {
                         >
                             <CardContent className="flex items-start justify-between p-6">
                                 <div>
-                                    <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                    <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-primary/10 text-foreground">
                                         <action.icon className="size-5" />
                                     </div>
                                     <h3 className="font-semibold">{action.title}</h3>
                                     <p className="mt-1 text-sm text-muted-foreground">{action.subtitle}</p>
                                 </div>
-                                <ArrowUpRight className="size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
+                                <ArrowUpRight className="size-5 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" />
                             </CardContent>
                         </Card>
                     </Reveal>

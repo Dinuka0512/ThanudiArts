@@ -174,15 +174,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-4 text-center">
-      <p className="font-display text-6xl font-semibold text-primary">404</p>
-      <h1 className="text-xl font-semibold">Page not found</h1>
-      <p className="max-w-md text-muted-foreground">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-background px-4 text-center">
+      <p className="eyebrow">Error 404</p>
+      <h1 className="text-5xl font-medium leading-[0.95] tracking-[-0.05em] sm:text-7xl">
+        Lost in the <span className="editorial">gallery?</span>
+      </h1>
+      <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
         The page you&apos;re looking for doesn&apos;t exist or has moved.
       </p>
       <a
         href="/"
-        className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+        className="mt-2 inline-flex h-11 items-center justify-center rounded-none bg-brand px-6 text-[10px] font-medium uppercase tracking-[0.18em] text-foreground transition hover:bg-brand/90"
       >
         Back to home
       </a>

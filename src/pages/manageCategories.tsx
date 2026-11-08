@@ -102,7 +102,7 @@ export default function ManageCategories() {
             <Card className="mb-8 border-border/80">
                 <CardContent className="p-6">
                     <h3 className="mb-4 flex items-center gap-2 font-semibold">
-                        <Plus className="size-4 text-primary" />
+                        <Plus className="size-4 text-foreground" />
                         Add New Category
                     </h3>
                     <form onSubmit={handleAdd} className="space-y-4">

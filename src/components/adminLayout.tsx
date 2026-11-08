@@ -77,17 +77,17 @@ export default function AdminLayout({
 
   const navClass = (isActive: boolean) =>
     cn(
-      "justify-start gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground",
-      isActive && "bg-primary/10 text-primary",
+      "justify-start gap-2.5 rounded-none px-3 py-2.5 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground",
+      isActive && "bg-foreground text-background hover:bg-foreground hover:text-background",
     )
 
   const SidebarContent = (
     <>
-      <div className="mb-8 flex items-center gap-3 px-2">
-        <ThemeLogo className="h-9 w-auto" />
+      <div className="mb-8 flex items-center gap-3 border-b border-border px-2 pb-6">
+        <ThemeLogo className="h-8 w-auto" />
         <div>
-          <p className="font-display text-base font-semibold leading-tight">Thanudi Arts</p>
-          <p className="text-xs text-muted-foreground">Admin Panel</p>
+          <p className="text-sm font-medium leading-tight tracking-tight">Thanudi Arts</p>
+          <p className="eyebrow mt-1">Admin panel</p>
         </div>
       </div>
       <nav className="flex flex-1 flex-col gap-1">
@@ -103,7 +103,7 @@ export default function AdminLayout({
           </Button>
         ))}
       </nav>
-      <Button variant="ghost" className="justify-start gap-2.5 rounded-xl px-3 py-2.5 text-destructive" onClick={handleLogout}>
+      <Button variant="ghost" className="justify-start gap-2.5 rounded-none px-3 py-2.5 text-xs uppercase tracking-[0.12em] text-destructive" onClick={handleLogout}>
         <LogOut className="size-4" />
         Logout
       </Button>
@@ -139,11 +139,9 @@ export default function AdminLayout({
           <div className="mx-auto max-w-5xl">
             <header className="mb-8">
               <Reveal>
-                {badge && (
-                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">{badge}</p>
-                )}
-                <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight">{title}</h1>
-                {subtitle && <p className="mt-2 text-muted-foreground">{subtitle}</p>}
+                {badge && <p className="eyebrow">{badge}</p>}
+                <h1 className="mt-2 text-3xl font-medium tracking-[-0.04em]">{title}</h1>
+                {subtitle && <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>}
               </Reveal>
             </header>
             {children}

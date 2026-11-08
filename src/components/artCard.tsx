@@ -1,3 +1,4 @@
+import { ArrowUpRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
@@ -6,6 +7,7 @@ interface ArtCardProps {
   imageUrl?: string
   price?: string
   badge?: string
+  index?: number | string
   aspect?: string
   onClick?: () => void
 }
@@ -15,6 +17,7 @@ export default function ArtCard({
   imageUrl,
   price,
   badge,
+  index,
   aspect = "aspect-[4/5]",
   onClick,
 }: ArtCardProps) {
@@ -22,34 +25,51 @@ export default function ArtCard({
     <Card
       onClick={onClick}
       className={cn(
-        "group cursor-pointer overflow-hidden p-0 transition-all duration-300 hover:-translate-y-1",
-        onClick && "hover:shadow-xl",
+        "group cursor-pointer gap-0 overflow-hidden rounded-none border-0 bg-transparent py-0",
+        onClick && "cursor-pointer",
       )}
     >
-      <div className={cn("relative w-full overflow-hidden", aspect)}>
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={title}
-            loading="lazy"
-            decoding="async"
-            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-          />
-        ) : (
-          <div className="h-full w-full bg-secondary/40" />
-        )}
-
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+      <div className="relative overflow-hidden bg-secondary/50">
+        <div className={cn("relative w-full overflow-hidden", aspect)}>
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={title}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035]"
+            />
+          ) : (
+            <div className="h-full w-full bg-secondary/60" />
+          )}
+        </div>
 
         {badge && (
-          <span className="absolute left-3 top-3 rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
+          <span className="absolute left-0 top-0 bg-background/90 px-2.5 py-1.5 text-[9px] font-medium uppercase tracking-[0.16em] text-foreground backdrop-blur-sm">
             {badge}
           </span>
         )}
 
-        <div className="absolute inset-x-0 bottom-0 border-t border-white/15 bg-white/10 p-4 backdrop-blur-xl">
-          <p className="truncate font-semibold text-white drop-shadow-sm">{title}</p>
-          {price && <p className="mt-0.5 text-sm font-bold text-white/90">LKR. {price}</p>}
+        <span className="absolute right-0 top-0 flex size-9 translate-y-1 items-center justify-center bg-foreground text-background opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+          <ArrowUpRight className="size-4" />
+        </span>
+      </div>
+
+      <div className="border-b border-border pb-3 pt-3">
+        <div className="flex items-baseline gap-2.5">
+          {index !== undefined && (
+            <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+              {typeof index === "number" ? String(index).padStart(2, "0") : index}
+            </span>
+          )}
+          <p className="min-w-0 flex-1 truncate text-sm font-medium tracking-[-0.01em] text-foreground">
+            {title}
+          </p>
+          {price && (
+            <p className="shrink-0 text-xs tabular-nums text-muted-foreground">
+              LKR {price}
+            </p>
+          )}
         </div>
       </div>
     </Card>

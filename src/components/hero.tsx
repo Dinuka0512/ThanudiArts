@@ -1,65 +1,71 @@
 import { useNavigate } from "react-router-dom"
-import { ArrowRight, ChevronDown, Sparkles } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { ArrowUpRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { AmbientBackground } from "@/components/ambientBackground"
+import { START_PROJECT_MESSAGE, whatsappLink } from "@/lib/whatsapp"
 
 export default function Hero() {
   const navigate = useNavigate()
 
   return (
-    <section className="relative flex min-h-[92svh] items-center justify-center overflow-hidden py-28">
-      <AmbientBackground />
+    <section className="relative overflow-hidden bg-background">
+      <div aria-hidden className="grain pointer-events-none absolute inset-0" />
 
-      <div className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6">
-        <div>
-          <Badge
-            variant="outline"
-            className="gap-2 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-wider"
-          >
-            <Sparkles className="size-3.5 text-primary" />
-            Sri Lanka&apos;s Creative Art Studio
-          </Badge>
-        </div>
-
-        <h1
-          className="mt-7 font-display text-5xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-6xl md:text-7xl"
-        >
-          Hand-drawn &amp; digital art,
-          <br />
-          <span className="italic text-primary">made personal.</span>
-        </h1>
-
-        <p
-          className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground"
-        >
-          From unique illustrations to custom commissions, every piece tells a
-          story — imagined by Thanudi and crafted to feel like yours.
-        </p>
-
+      <div className="relative mx-auto flex min-h-[50svh] max-w-[1440px] flex-col justify-center px-4 sm:px-8">
+        {/* Meta strip */}
         <div
-          className="mt-10 flex flex-wrap items-center justify-center gap-4"
+          className="hero-fade-in flex items-center justify-center gap-4 border-b border-foreground/15 py-3"
+          style={{ animationDelay: "0.1s" }}
         >
-          <Button size="lg" className="group rounded-full px-8" onClick={() => navigate("/gallery")}>
-            View Gallery
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="rounded-full px-8"
-            onClick={() => navigate("/contact")}
-          >
-            Start a Project
-          </Button>
+          <span className="eyebrow text-foreground/60">Est. 2021</span>
+          <span className="eyebrow hidden text-foreground/60 sm:block">Original works &amp; commissions</span>
+          <span className="eyebrow text-foreground/60">Sri Lanka</span>
         </div>
-      </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-muted-foreground">
-        <span className="flex flex-col items-center gap-1 text-xs uppercase tracking-widest">
-          Scroll
-          <ChevronDown className="size-4 animate-bounce" />
-        </span>
+        {/* Headline */}
+        <div className="relative flex flex-1 flex-col justify-center py-8 md:py-10">
+          <p className="hero-fade-in text-center" style={{ animationDelay: "0.2s" }}>
+            <span className="eyebrow text-foreground/60">ORIGINAL ART SRI LANKA</span>
+          </p>
+
+          <h1 className="mt-6 text-center text-[clamp(3rem,9vw,8rem)] font-medium leading-[0.86] tracking-[-0.065em] text-foreground">
+            <span className="hero-line block overflow-hidden">
+              <span className="hero-line-inner block" style={{ animationDelay: "0.35s" }}>
+                Arts that stays with you
+              </span>
+            </span>
+          </h1>
+
+          <p
+            className="hero-fade-in brand-wordmark mt-6 text-center text-5xl uppercase tracking-[0.06em] text-brand sm:text-6xl md:text-7xl"
+            style={{ animationDelay: "0.65s" }}
+          >
+            Thanudi Arts
+          </p>
+
+          <div
+            className="hero-fade-in mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4"
+            style={{ animationDelay: "0.8s" }}
+          >
+            <Button
+              onClick={() => navigate("/gallery")}
+              className="group h-12 rounded-none bg-foreground px-5 text-[10px] font-medium uppercase tracking-[0.18em] text-background hover:bg-foreground/90"
+            >
+              View the gallery
+              <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </Button>
+
+            <a
+              href={whatsappLink(START_PROJECT_MESSAGE)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="link-line text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Commission a piece
+            </a>
+          </div>
+        </div>
+
+
       </div>
     </section>
   )

@@ -209,7 +209,7 @@ export default function ManageGallery() {
             <Card className="mb-8 border-border/80">
                 <CardContent className="p-6">
                     <h3 className="mb-4 flex items-center gap-2 font-semibold">
-                        <ImagePlus className="size-4 text-primary" />
+                        <ImagePlus className="size-4 text-foreground" />
                         Add New Artwork
                     </h3>
                     <form onSubmit={handleAdd} className="grid gap-4 md:grid-cols-2">
